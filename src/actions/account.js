@@ -23,8 +23,12 @@ export function login(username, password, location, provider) {
 
 export function getProfile() {
   return async dispatch => {
-    const apiClient = getApi();
-    const profile = await apiClient.GetProfileAsync();
-    dispatch({ type: GET_PROFILE, profile });
+    try {
+      const apiClient = getApi();
+      const profile = await apiClient.GetProfileAsync();
+      dispatch({ type: GET_PROFILE, status: { success: true }, profile });
+    } catch (e) {
+      dispatch({ type: GET_PROFILE, status: { success: false, message: e.message } });
+    }
   };
 }

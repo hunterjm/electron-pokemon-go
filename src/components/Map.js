@@ -1,7 +1,9 @@
 import React, { PropTypes, Component } from 'react';
 import { default as raf } from 'raf';
 import { GoogleMapLoader, GoogleMap, Circle, InfoWindow, Marker } from 'react-google-maps';
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import * as LocationActions from '../actions/location';
 
 class Map extends Component {
   constructor(props, context) {
@@ -26,6 +28,17 @@ class Map extends Component {
     };
     raf(tick);
   }
+
+  handleMapClick(event) {
+    this.props.setLocation({
+      type: 'coords',
+      coords: {
+        latitude: event.latLng.lat(),
+        longitude: event.latLng.lng()
+      }
+    });
+  }
+
 
   render() {
     const { content, radius, markers } = this.state;
@@ -73,7 +86,8 @@ class Map extends Component {
           <GoogleMap
             ref={(map) => (this._googleMapComponent = map)}
             defaultZoom={16}
-            center={center}
+            center={this._googleMapComponent && this._googleMapComponent.getCenter() || center}
+            onClick={::this.handleMapClick}
           >
             {contents}
           </GoogleMap>
@@ -84,7 +98,9 @@ class Map extends Component {
 }
 
 Map.propTypes = {
-  location: PropTypes.object.isRequired
+  game: PropTypes.object.isRequired,
+  location: PropTypes.object.isRequired,
+  setLocation: PropTypes.func.isRequired
 };
 
 Map.contextTypes = {
@@ -93,8 +109,13 @@ Map.contextTypes = {
 
 function mapStateToProps(state) {
   return {
+    game: state.game,
     location: state.location
   };
 }
 
-export default connect(mapStateToProps)(Map);
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators(LocationActions, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Map);

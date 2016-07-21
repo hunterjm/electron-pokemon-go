@@ -138,10 +138,14 @@ Account.contextTypes = {
 };
 
 function mapStateToProps(state) {
-  return {
+  const props = {
     account: state.account,
     location: state.location
   };
+  if (state.account.message) {
+    props.errors = { detail: state.account.message };
+  }
+  return props;
 }
 
 function mapDispatchToProps(dispatch) {

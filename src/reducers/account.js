@@ -9,7 +9,7 @@ export function account(state = {}, action) {
       nextState = Object.assign({}, state, action.status);
       return nextState;
     case GET_PROFILE:
-      nextState = Object.assign({}, state, action.profile);
+      nextState = Object.assign({}, state, { profile: action.profile });
       return nextState;
     case SAVE_ACCOUNT:
       nextState = {
