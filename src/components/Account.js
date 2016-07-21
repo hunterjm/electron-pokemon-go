@@ -1,7 +1,6 @@
 import React, { PropTypes, Component } from 'react';
 import ReactDOM from 'react-dom';
 import { PageHeader, FormControl, Button } from 'react-bootstrap';
-import { getApi } from '../utils/ApiUtil';
 import validator from 'validator';
 import _ from 'lodash';
 import { bindActionCreators } from 'redux';
@@ -11,7 +10,6 @@ import * as AccountActions from '../actions/account';
 class Account extends Component {
   constructor(props) {
     super(props);
-    this.next = undefined;
     this.state = {
       username: props.account.username || '',
       password: props.account.password || '',
@@ -21,26 +19,30 @@ class Account extends Component {
   }
 
   componentDidMount() {
-    if (this.props.account.provider) {
-      ReactDOM.findDOMNode(this.refs.providerSelect).style.color = '#556473';
-    } else {
+    if (!this.props.account.username) {
       ReactDOM.findDOMNode(this.refs.usernameInput).focus();
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState({ errors: nextProps.errors || {} });
+    if (nextProps.account.loggedIn) {
+      this.context.router.push('/player');
+    }
+    this.setState({ errors: nextProps.errors || {}, loading: false });
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return (nextState.loading !== this.state.loading
+    return (nextProps.account.loggedIn !== this.props.account.loggedIn
+      || nextState.loading !== this.state.loading
       || nextState.errors && nextState.errors !== this.state.errors);
   }
 
   validate() {
     const errors = {};
-    if (!validator.isEmail(this.state.username)) {
+    if (this.state.provider === 'google' && !validator.isEmail(this.state.username)) {
       errors.username = 'Must be an email address';
+    } else if (!validator.isLength(this.state.username, { min: 6 })) {
+      errors.username = ('Must be longer than 6 characters');
     }
 
     // Your password must be 8 - 16 characters,
@@ -51,7 +53,7 @@ class Account extends Component {
     }
 
     if (validator.isNull(this.state.provider)) {
-      errors.platform = 'The provider you log in with is required';
+      errors.provider = 'The provider you log in with is required';
     }
 
     return errors;
@@ -61,41 +63,24 @@ class Account extends Component {
     const nextState = {};
     nextState[event.target.name] = event.target.value;
     this.setState(nextState);
-
-    // Change color back to dark gray on change
-    if (event.target.name === 'provider') {
-      const node = event.target;
-      node.style.color = '#556473';
-    }
   }
 
   handleBlur() {
-    this.setState({ errors: _.omitBy(this.validate(), (val, key) => !this.state[key].length) });
+    this.setState({ errors: _.omitBy(this.validate(), (val, key) => !this.state[key] || !this.state[key].length) });
   }
 
   async handleLogin() {
-    if (this.next !== undefined) {
-      this.setState({ loading: true });
-      this.next(this.state.code);
-    } else {
-      const errors = this.validate();
-      this.setState({ errors });
+    const errors = this.validate();
+    this.setState({ errors });
 
-      if (_.isEmpty(errors)) {
-        this.setState({ loading: true });
-        const apiClient = getApi();
-        await apiClient.init(
-          this.state.username,
-          this.state.password,
-          {
-            type: 'name',
-            name: 'Times Square'
-          },
-          this.state.provider
-        );
-        this.props.saveAccount(this.state);
-        this.context.router.push('/player');
-      }
+    if (_.isEmpty(errors)) {
+      this.setState({ loading: true });
+      this.props.login(
+        this.state.username,
+        this.state.password,
+        this.props.location,
+        this.state.provider
+      );
     }
   }
 
@@ -142,8 +127,10 @@ class Account extends Component {
 }
 
 Account.propTypes = {
-  saveAccount: PropTypes.func.isRequired,
-  account: PropTypes.object.isRequired
+  login: PropTypes.func.isRequired,
+  account: PropTypes.object.isRequired,
+  location: PropTypes.object.isRequired,
+  errors: PropTypes.object
 };
 
 Account.contextTypes = {
@@ -152,7 +139,8 @@ Account.contextTypes = {
 
 function mapStateToProps(state) {
   return {
-    account: state.account
+    account: state.account,
+    location: state.location
   };
 }
 

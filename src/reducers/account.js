@@ -1,10 +1,16 @@
-import { SAVE_ACCOUNT } from '../actions/account';
+import { SAVE_ACCOUNT, LOGIN, GET_PROFILE } from '../actions/account';
 import { saveAccount, loadAccount } from '../utils/ApiUtil';
 import { isEmpty } from 'lodash';
 
 export function account(state = {}, action) {
   let nextState;
   switch (action.type) {
+    case LOGIN:
+      nextState = Object.assign({}, state, action.status);
+      return nextState;
+    case GET_PROFILE:
+      nextState = Object.assign({}, state, action.profile);
+      return nextState;
     case SAVE_ACCOUNT:
       nextState = {
         username: action.account.username,

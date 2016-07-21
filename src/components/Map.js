@@ -29,7 +29,10 @@ class Map extends Component {
 
   render() {
     const { content, radius, markers } = this.state;
-    const center = this.props.location.coords;
+    let center;
+    if (this.props.location && this.props.location.coords) {
+      center = { lat: this.props.location.coords.latitude || 0, lng: this.props.location.coords.longitude || 0 };
+    }
     let contents = [];
 
     if (center) {

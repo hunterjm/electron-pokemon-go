@@ -14,10 +14,11 @@ class App extends Component {
       this.props.setLocation({
         type: 'coords',
         coords: {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
         }
       });
+      console.log(position);
     }, () => {
       this.props.setLocation({
         type: 'name',
