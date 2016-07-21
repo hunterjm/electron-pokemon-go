@@ -1,16 +1,12 @@
-import { default as React, Component } from 'react';
-import { default as canUseDOM } from 'can-use-dom';
+import React, { PropTypes, Component } from 'react';
 import { default as raf } from 'raf';
 import { GoogleMapLoader, GoogleMap, Circle, InfoWindow, Marker } from 'react-google-maps';
+import { connect } from 'react-redux';
 
-const geolocation = (canUseDOM && navigator.geolocation);
-
-export default class Map extends Component {
+class Map extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
-      center: null,
-      location: null,
       content: null,
       radius: 0,
       markers: []
@@ -18,47 +14,27 @@ export default class Map extends Component {
   }
 
   componentDidMount() {
-    geolocation.getCurrentPosition((position) => {
-      this.setState({
-        center: {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        },
-        location: {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        }
-      });
+    const tick = () => {
+      this.setState({ radius: this.state.radius + 0.5 });
 
-      const tick = () => {
-        this.setState({ radius: this.state.radius + 0.5 });
-
-        if (this.state.radius > 50) {
-          this.setState({ radius: 0 });
-          setTimeout(() => { raf(tick); }, 500);
-        } else {
-          raf(tick);
-        }
-      };
-      raf(tick);
-    }, (reason) => {
-      this.setState({
-        center: {
-          lat: 60,
-          lng: 105,
-        },
-        content: `Error: The Geolocation service failed (${reason}).`,
-      });
-    });
+      if (this.state.radius > 50) {
+        this.setState({ radius: 0 });
+        setTimeout(() => { raf(tick); }, 500);
+      } else {
+        raf(tick);
+      }
+    };
+    raf(tick);
   }
 
   render() {
-    const { center, location, content, radius, markers } = this.state;
+    const { content, radius, markers } = this.state;
+    const center = this.props.location.coords;
     let contents = [];
 
-    if (location) {
+    if (center) {
       contents.push(
-        (<Circle key="circle" center={location} radius={radius} options={{
+        (<Circle key="circle" center={center} radius={radius} options={{
           fillColor: 'blue',
           fillOpacity: 0.1,
           strokeColor: 'purple',
@@ -68,7 +44,7 @@ export default class Map extends Component {
         />)
       );
       if (content) {
-        contents.push((<InfoWindow key="info" position={location} content={content} />));
+        contents.push((<InfoWindow key="info" position={center} content={content} />));
       }
     }
 
@@ -103,3 +79,19 @@ export default class Map extends Component {
     );
   }
 }
+
+Map.propTypes = {
+  location: PropTypes.object.isRequired
+};
+
+Map.contextTypes = {
+  router: PropTypes.object.isRequired
+};
+
+function mapStateToProps(state) {
+  return {
+    location: state.location
+  };
+}
+
+export default connect(mapStateToProps)(Map);

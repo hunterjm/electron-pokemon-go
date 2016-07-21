@@ -1,10 +1,10 @@
 import React from 'react';
 import { Route, IndexRoute } from 'react-router';
 import App from './components/App';
-import Map from './components/Map';
+import Account from './components/Account';
 
 export default (
   <Route path="/" component={App}>
-    <IndexRoute component={Map} />
+    <IndexRoute component={Account} />
   </Route>
 );
