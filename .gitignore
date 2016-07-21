@@ -1,0 +1,22 @@
+.DS_Store
+.swp
+build
+dist
+release
+installer
+node_modules
+coverage
+npm-debug.log
+
+# Integration test environment
+integration
+
+# Cache
+cache
+
+# Tests
+.test
+settings.json
+
+# IDEs
+.idea
