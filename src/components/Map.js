@@ -4,6 +4,7 @@ import { GoogleMapLoader, GoogleMap, Circle, InfoWindow, Marker } from 'react-go
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import * as LocationActions from '../actions/location';
+import * as GameActions from '../actions/game';
 
 class Map extends Component {
   constructor(props, context) {
@@ -16,9 +17,9 @@ class Map extends Component {
 
   componentDidMount() {
     const tick = () => {
-      this.setState({ radius: this.state.radius + 0.5 });
+      this.setState({ radius: this.state.radius + 1 });
 
-      if (this.state.radius > 50) {
+      if (this.state.radius > 100) {
         this.setState({ radius: 0 });
         setTimeout(() => { raf(tick); }, 500);
       } else {
@@ -36,6 +37,7 @@ class Map extends Component {
         longitude: event.latLng.lng()
       }
     });
+    this.props.heartbeat();
   }
 
 
@@ -70,8 +72,7 @@ class Map extends Component {
           lat: pokemon.latitude,
           lng: pokemon.longitude
         };
-        const size = 120 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 8);
-        console.log(size);
+        const size = Math.min(120 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 8), 64);
         const icon = {
           url: pokemon.img,
           scaledSize: {
@@ -112,7 +113,8 @@ class Map extends Component {
 Map.propTypes = {
   game: PropTypes.object.isRequired,
   location: PropTypes.object.isRequired,
-  setLocation: PropTypes.func.isRequired
+  setLocation: PropTypes.func.isRequired,
+  heartbeat: PropTypes.func.isRequired
 };
 
 Map.contextTypes = {
@@ -127,7 +129,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators(LocationActions, dispatch);
+  return bindActionCreators({ ...LocationActions, ...GameActions }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Map);
