@@ -5,24 +5,73 @@ export function game(state = {}, action) {
   switch (action.type) {
     case HEARTBEAT:
       if (action.status.success) {
-        const nearbyPokemon = [];
+        let nearbyPokemon = [];
+        let nearbyForts = [];
         for (const cell of action.hb.cells) {
           for (const mp of cell.MapPokemon) {
-            const pokemon = action.pokemonlist[parseInt(mp.PokedexTypeId, 10) - 1];
+            const pokemon = { ...action.pokemonlist[parseInt(mp.PokedexTypeId, 10) - 1] };
+            pokemon.id = parseInt(mp.EncounterId, 10);
+            pokemon.catchable = true;
             pokemon.latitude = mp.Latitude;
             pokemon.longitude = mp.Longitude;
             pokemon.expires = parseInt(mp.ExpirationTimeMs, 10);
-            nearbyPokemon.push(pokemon);
           }
           for (const wp of cell.WildPokemon) {
-            const pokemon = action.pokemonlist[parseInt(wp.pokemon.PokemonId, 10) - 1];
+            if (parseInt(wp.TimeTillHiddenMs, 10) < 0) continue;
+            const pokemon = { ...action.pokemonlist[parseInt(wp.pokemon.PokemonId, 10) - 1] };
+            pokemon.id = parseInt(wp.EncounterId, 10);
+            pokemon.catchable = false;
             pokemon.latitude = wp.Latitude;
             pokemon.longitude = wp.Longitude;
             pokemon.expires = Date.now() + parseInt(wp.TimeTillHiddenMs, 10);
             nearbyPokemon.push(pokemon);
           }
+          for (const ft of cell.Fort) {
+            const fort = {
+              id: ft.FortId,
+              type: ft.FortType,
+              team: ft.Team,
+              latitude: ft.Latitude,
+              longitude: ft.Longitude,
+              pokemon: ft.GuardPokemonId && { ...action.pokemonlist[parseInt(ft.GuardPokemonId, 10) - 1] } || null,
+              reputation: ft.GymPoints && parseInt(ft.GymPoints, 10) || null,
+              inBattle: ft.IsInBattle || 0,
+              lure: null
+            };
+            if (ft.LureInfo) {
+              const pId = ft.LureInfo.ActivePokemonId;
+              fort.lure = {
+                pokemon: pId && { ...action.pokemonlist[parseInt(pId, 10) - 1] } || null,
+                expires: parseInt(ft.LureInfo.LureExpiresTimestampMs, 10),
+                deployer: ft.LureInfo.DeployerPlayerCodename
+              };
+              if (fort.lure.pokemon) {
+                fort.lure.pokemon.id = `${fort.id}:Lure:${fort.lure.pokemon.id}`;
+                nearbyPokemon.push({
+                  ...fort.lure.pokemon,
+                  latitude: fort.latitude,
+                  longitude: fort.longitude,
+                  expires: fort.lure.expires
+                });
+              }
+            }
+            nearbyForts.push(fort);
+          }
         }
-        nextState = Object.assign({}, state, { nearbyPokemon });
+        nearbyPokemon = nearbyPokemon.reduce((p, c) => {
+          if (p.indexOf(c) < 0) {
+            p.push(c);
+          }
+          return p;
+        }, []);
+        nearbyForts = nearbyForts.reduce((p, c) => {
+          if (p.indexOf(c) < 0) {
+            p.push(c);
+          }
+          return p;
+        }, []);
+        console.log(nearbyPokemon);
+        nextState = Object.assign({}, state, { nearbyPokemon, nearbyForts });
       } else {
         nextState = Object.assign({}, state, { error: action.status.message });
       }

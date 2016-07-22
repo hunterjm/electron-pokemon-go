@@ -31,7 +31,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'win32',
           arch: 'x64',
-          asar: false,
+          asar: true,
           icon: 'util/pokemongo.ico'
         }
       },
@@ -43,7 +43,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'darwin',
           arch: 'x64',
-          asar: false,
+          asar: true,
           'app-version': packagejson.version
         }
       },
@@ -55,7 +55,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'linux',
           arch: 'x64',
-          asar: false,
+          asar: true,
           'app-bundle-id': 'com.hunterjm.pokemongo',
           'app-version': packagejson.version
         }
