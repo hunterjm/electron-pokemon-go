@@ -1,6 +1,6 @@
 {
   "name": "electron-pokemon-go",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "Jason Hunter",
   "description": "Pokemon Go toolset.",
   "homepage": "https://github.com/hunterjm/electron-pokemon-go",
