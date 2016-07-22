@@ -31,15 +31,11 @@ class App extends Component {
         attempts++;
         setTimeout(() => self.getLocation(), 500);
       } else {
-        // this.props.setLocation({
-        //   type: 'name',
-        //   name: 'London'
-        // });
         this.props.setLocation({
           type: 'coords',
           coords: {
-            latitude: 35.11157989501953,
-            longitude: -81.00286102294922
+            latitude: 35.006711942342534,
+            longitude: -80.84641456604004
           }
         });
       }

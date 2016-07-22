@@ -9,7 +9,7 @@ module.exports = function (grunt) {
   env.NODE_ENV = target;
 
   var BASENAME = 'Pokemon Go';
-  var OSX_APPNAME = BASENAME + ' (Beta)';
+  var OSX_APPNAME = BASENAME + ' (Alpha)';
   var WINDOWS_APPNAME = BASENAME + ' (Alpha)';
   var LINUX_APPNAME = BASENAME + ' (Alpha)';
   var OSX_OUT = './dist';
@@ -31,7 +31,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'win32',
           arch: 'x64',
-          asar: true,
+          asar: false,
           icon: 'util/pokemongo.ico'
         }
       },
@@ -43,7 +43,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'darwin',
           arch: 'x64',
-          asar: true,
+          asar: false,
           'app-version': packagejson.version
         }
       },
@@ -55,7 +55,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'linux',
           arch: 'x64',
-          asar: true,
+          asar: false,
           'app-bundle-id': 'com.hunterjm.pokemongo',
           'app-version': packagejson.version
         }
@@ -104,13 +104,6 @@ module.exports = function (grunt) {
           cwd: 'fonts/',
           src: ['**/*'],
           dest: 'build/'
-        }, {
-          cwd: 'node_modules/',
-          src: Object.keys(packagejson.dependencies).map(function (dep) {
-            return dep + '/**/*';
-          }),
-          dest: 'build/node_modules/',
-          expand: true
         }]
       },
       windows: {
@@ -132,7 +125,7 @@ module.exports = function (grunt) {
           dest: '<%= OSX_FILENAME %>/Contents/Resources/resources/'
         }, {
           src: 'util/pokemongo.icns',
-          dest: '<%= OSX_FILENAME %>/Contents/Resources/atom.icns'
+          dest: '<%= OSX_FILENAME %>/Contents/Resources/electron.icns'
         }],
         options: {
           mode: true
@@ -200,7 +193,15 @@ module.exports = function (grunt) {
         ].join(' && '),
       },
       zip: {
-        command: 'ditto -c -k --sequesterRsrc --keepParent <%= OSX_FILENAME_ESCAPED %> release/' + BASENAME + '-Mac.zip',
+        command: 'ditto -c -k --sequesterRsrc --keepParent "<%= OSX_FILENAME %>" "release/' + BASENAME + '-Mac.zip"',
+      },
+      install: {
+        command: 'npm install --production',
+        options: {
+          execOptions: {
+            cwd: 'build/'
+          }
+        }
       }
     },
 
@@ -248,8 +249,8 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('lint', ['eslint']);
-  grunt.registerTask('default', ['newer:babel', 'eslint', 'less', 'newer:copy:dev', 'shell:electron', 'watchChokidar']);
-  grunt.registerTask('release', ['clean:release', 'babel', 'eslint', 'less', 'copy:dev', 'electron', 'copy:osx', 'shell:sign', 'shell:zip', 'copy:windows', 'rcedit:exes', 'compress']);
+  grunt.registerTask('default', ['newer:babel', 'eslint', 'less', 'newer:copy:dev', 'shell:install', 'shell:electron', 'watchChokidar']);
+  grunt.registerTask('release', ['clean:release', 'babel', 'eslint', 'less', 'copy:dev', 'shell:install', 'electron', 'copy:osx', 'shell:sign', 'shell:zip', 'copy:windows', 'rcedit:exes', 'compress']);
 
   process.on('SIGINT', function () {
     grunt.task.run(['shell:electron:kill']);
