@@ -31,7 +31,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'win32',
           arch: 'x64',
-          asar: true,
+          asar: false,
           icon: 'util/pokemongo.ico'
         }
       },
@@ -218,7 +218,7 @@ module.exports = function (grunt) {
         files: [{
           expand: true,
           dot: true,
-          cwd: './dist/PokemonGo-win32-x64',
+          cwd: './dist/Pokemon Go-win32-x64',
           src: '**/*'
         }]
 	    },
@@ -250,7 +250,8 @@ module.exports = function (grunt) {
 
   grunt.registerTask('lint', ['eslint']);
   grunt.registerTask('default', ['newer:babel', 'eslint', 'less', 'newer:copy:dev', 'shell:install', 'shell:electron', 'watchChokidar']);
-  grunt.registerTask('release', ['clean:release', 'babel', 'eslint', 'less', 'copy:dev', 'shell:install', 'electron', 'copy:osx', 'shell:sign', 'shell:zip', 'copy:windows', 'rcedit:exes', 'compress']);
+  grunt.registerTask('release', ['clean:release', 'babel', 'eslint', 'less', 'copy:dev', 'shell:install', 'electron:osx', 'copy:osx', 'shell:sign', 'shell:zip']);
+  // grunt.registerTask('release', ['clean:release', 'babel', 'eslint', 'less', 'copy:dev', 'shell:install', 'electron', 'copy:osx', 'shell:sign', 'shell:zip', 'copy:windows', 'rcedit:exes', 'compress']);
 
   process.on('SIGINT', function () {
     grunt.task.run(['shell:electron:kill']);
