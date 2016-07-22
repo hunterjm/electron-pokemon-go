@@ -1,16 +1,22 @@
 import React, { PropTypes, Component } from 'react';
 import { Grid, Row, Col } from 'react-bootstrap';
-import { default as canUseDOM } from 'can-use-dom';
+// import { default as canUseDOM } from 'can-use-dom';
 import Map from './Map';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import * as LocationActions from '../actions/location';
 
-const geolocation = (canUseDOM && navigator.geolocation);
+// const geolocation = (canUseDOM && navigator.geolocation);
+let attempts = 0;
 
 class App extends Component {
   componentDidMount() {
-    geolocation.getCurrentPosition((position) => {
+    this.getLocation();
+  }
+
+  getLocation() {
+    const self = this;
+    navigator.geolocation.getCurrentPosition((position) => {
       this.props.setLocation({
         type: 'coords',
         coords: {
@@ -19,11 +25,24 @@ class App extends Component {
         }
       });
       console.log(position);
-    }, () => {
-      this.props.setLocation({
-        type: 'name',
-        name: 'Times Square'
-      });
+    }, (result) => {
+      console.error(result);
+      if (attempts < 2) {
+        attempts++;
+        setTimeout(() => self.getLocation(), 500);
+      } else {
+        // this.props.setLocation({
+        //   type: 'name',
+        //   name: 'London'
+        // });
+        this.props.setLocation({
+          type: 'coords',
+          coords: {
+            latitude: 35.11157989501953,
+            longitude: -81.00286102294922
+          }
+        });
+      }
     });
   }
 

@@ -10,8 +10,7 @@ class Map extends Component {
     super(props, context);
     this.state = {
       content: null,
-      radius: 0,
-      markers: []
+      radius: 0
     };
   }
 
@@ -41,7 +40,7 @@ class Map extends Component {
 
 
   render() {
-    const { content, radius, markers } = this.state;
+    const { content, radius } = this.state;
     let center;
     if (this.props.location && this.props.location.coords) {
       center = { lat: this.props.location.coords.latitude || 0, lng: this.props.location.coords.longitude || 0 };
@@ -64,14 +63,27 @@ class Map extends Component {
       }
     }
 
-    contents = contents.concat(markers.map((marker, i) => {
-      const markerKey = `Marker${i}`;
-      return (
-        <Marker key={markerKey}
-          {...marker}
-        />
-      );
-    }));
+    if (this.props.game.nearbyPokemon) {
+      contents = contents.concat(this.props.game.nearbyPokemon.map((pokemon, i) => {
+        const markerKey = `Pokemon${i}`;
+        const position = {
+          lat: pokemon.latitude,
+          lng: pokemon.longitude
+        };
+        const size = 120 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 8);
+        console.log(size);
+        const icon = {
+          url: pokemon.img,
+          scaledSize: {
+            width: size,
+            height: size
+          }
+        };
+        return (
+          <Marker key={markerKey} position={position} icon={icon} />
+        );
+      }));
+    }
 
     return (
       <GoogleMapLoader

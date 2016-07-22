@@ -4,11 +4,18 @@ export const SET_LOCATION = 'SET_LOCATION';
 
 export function setLocation(location) {
   const apiClient = getApi();
-  if (apiClient.playerInfo.accessToken) {
-    return async dispatch => {
-      await apiClient.SetLocationAsync(location);
-      dispatch({ type: SET_LOCATION, location });
-    };
-  }
-  return { type: SET_LOCATION, location };
+  return async dispatch => {
+    const coords = await apiClient.SetLocationAsync(location);
+    let state = location;
+    if (location.type === 'name') {
+      state = {
+        type: 'coords',
+        coords: {
+          latitude: coords.latitude,
+          longitude: coords.longitude
+        }
+      };
+    }
+    dispatch({ type: SET_LOCATION, location: state });
+  };
 }

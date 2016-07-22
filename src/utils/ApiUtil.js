@@ -1,4 +1,4 @@
-import Pokeio from 'pokemon-go-node-api';
+import { Pokeio } from 'pokemon-go-node-api';
 import fs from 'fs';
 import path from 'path';
 import electron from 'electron';
@@ -6,7 +6,7 @@ import Promise from 'bluebird';
 const remote = electron.remote;
 const app = remote.app;
 
-const api = Promise.promisifyAll(Pokeio);
+const api = Promise.promisifyAll(new Pokeio());
 
 export default {
   getApi() {

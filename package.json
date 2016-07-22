@@ -30,7 +30,7 @@
     "numeral": "^1.5.3",
     "osx-release": "^1.1.0",
     "parseUri": "^1.2.3-2",
-    "pokemon-go-node-api": "git://github.com/Armax/Pokemon-GO-node-api.git",
+    "pokemon-go-node-api": "git://github.com/hunterjm/Pokemon-GO-node-api.git",
     "raf": "^3.2.0",
     "react": "^15.1.0",
     "react-addons-pure-render-mixin": "^15.1.0",
