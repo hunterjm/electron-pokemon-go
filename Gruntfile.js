@@ -196,7 +196,7 @@ module.exports = function (grunt) {
         command: 'ditto -c -k --sequesterRsrc --keepParent "<%= OSX_FILENAME %>" "release/' + BASENAME + '-Mac.zip"',
       },
       install: {
-        command: 'npm install --production && npm link pokemon-go-node-api',
+        command: 'npm install --production',
         options: {
           execOptions: {
             cwd: 'build/'
