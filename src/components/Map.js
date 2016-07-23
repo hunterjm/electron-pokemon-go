@@ -1,6 +1,8 @@
 import React, { PropTypes, Component } from 'react';
 import { default as raf } from 'raf';
 import { GoogleMapLoader, GoogleMap, Circle, InfoWindow, Marker } from 'react-google-maps';
+import PokemonInfo from './PokemonInfo';
+import FortInfo from './FortInfo';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import * as LocationActions from '../actions/location';
@@ -11,7 +13,8 @@ class Map extends Component {
     super(props, context);
     this.state = {
       content: null,
-      radius: 0
+      radius: 0,
+      activeMarker: null
     };
   }
 
@@ -40,6 +43,13 @@ class Map extends Component {
     this.props.heartbeat();
   }
 
+  handleMarkerClick(id) {
+    this.setState({ activeMarker: id });
+  }
+
+  handleMarkerClose() {
+    this.setState({ activeMarker: null });
+  }
 
   render() {
     const { content, radius } = this.state;
@@ -67,12 +77,7 @@ class Map extends Component {
 
     if (this.props.game.nearbyPokemon) {
       contents = contents.concat(this.props.game.nearbyPokemon.map((pokemon, i) => {
-        const markerKey = `Pokemon${i}`;
-        const position = {
-          lat: pokemon.latitude,
-          lng: pokemon.longitude
-        };
-        const size = Math.min(120 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 8), 64);
+        const size = Math.min(120 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 8), 48);
         const icon = {
           url: pokemon.img,
           scaledSize: {
@@ -80,8 +85,83 @@ class Map extends Component {
             height: size
           }
         };
+        const marker = {
+          key: `Pokemon${i}`,
+          position: {
+            lat: pokemon.latitude,
+            lng: pokemon.longitude
+          },
+          icon,
+          zIndex: 1000
+        };
+        let info;
+        if (this.state.activeMarker === pokemon.id) {
+          info = (
+            <InfoWindow key={`${pokemon.id}Info`} onCloseclick={::this.handleMarkerClose}>
+              <PokemonInfo pokemon={pokemon} />
+            </InfoWindow>
+          );
+        }
         return (
-          <Marker key={markerKey} position={position} icon={icon} />
+          <Marker {...marker} onClick={this.handleMarkerClick.bind(this, pokemon.id)}>
+            {info}
+          </Marker>
+        );
+      }));
+    }
+
+    if (this.props.game.nearbyForts) {
+      contents = contents.concat(this.props.game.nearbyForts.map((fort, i) => {
+        const size = Math.min(120 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 8), 48);
+        let icon;
+        if (fort.type) {
+          if (fort.lure) {
+            icon = {
+              url: 'pokestop_lure.png',
+              scaledSize: {
+                width: size,
+                height: size
+              }
+            };
+          } else {
+            icon = {
+              url: 'pokestop.png',
+              scaledSize: {
+                width: size,
+                height: size
+              }
+            };
+          }
+        } else {
+          icon = {
+            url: `team${parseInt(fort.team, 10)}.png`,
+            scaledSize: {
+              width: size,
+              height: size
+            }
+          };
+        }
+        const marker = {
+          key: `Fort${i}`,
+          position: {
+            lat: fort.latitude,
+            lng: fort.longitude
+          },
+          icon,
+          zIndex: 1
+        };
+        let info;
+        if (this.state.activeMarker === fort.id) {
+          info = (
+            <InfoWindow key={`${fort.id}Info`} onCloseclick={::this.handleMarkerClose}>
+              <FortInfo fort={fort} />
+            </InfoWindow>
+          );
+        }
+        return (
+          <Marker {...marker} onClick={this.handleMarkerClick.bind(this, fort.id)}>
+            {info}
+          </Marker>
         );
       }));
     }

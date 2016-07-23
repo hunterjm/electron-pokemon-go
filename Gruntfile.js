@@ -9,9 +9,9 @@ module.exports = function (grunt) {
   env.NODE_ENV = target;
 
   var BASENAME = 'Pokemon Go';
-  var OSX_APPNAME = BASENAME + ' (Alpha)';
-  var WINDOWS_APPNAME = BASENAME + ' (Alpha)';
-  var LINUX_APPNAME = BASENAME + ' (Alpha)';
+  var OSX_APPNAME = BASENAME + ' (Beta)';
+  var WINDOWS_APPNAME = BASENAME + ' (Beta)';
+  var LINUX_APPNAME = BASENAME + ' (Beta)';
   var OSX_OUT = './dist';
   var OSX_OUT_X64 = OSX_OUT + '/' + OSX_APPNAME + '-darwin-x64';
   var OSX_FILENAME = OSX_OUT_X64 + '/' + OSX_APPNAME + '.app';
@@ -43,7 +43,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'darwin',
           arch: 'x64',
-          asar: false,
+          asar: true,
           'app-version': packagejson.version
         }
       },
@@ -55,7 +55,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'linux',
           arch: 'x64',
-          asar: false,
+          asar: true,
           'app-bundle-id': 'com.hunterjm.pokemongo',
           'app-version': packagejson.version
         }
@@ -136,7 +136,7 @@ module.exports = function (grunt) {
     rename: {
       installer: {
         src: 'dist/Setup.exe',
-        dest: 'dist/' + BASENAME + 'Setup-' + packagejson.version + '-Windows-Alpha.exe'
+        dest: 'dist/' + BASENAME + 'Setup-' + packagejson.version + '-Windows-Beta.exe'
       }
     },
 
@@ -218,7 +218,7 @@ module.exports = function (grunt) {
         files: [{
           expand: true,
           dot: true,
-          cwd: './dist/PokemonGo-win32-x64',
+          cwd: './dist/Pokemon Go-win32-x64',
           src: '**/*'
         }]
 	    },
