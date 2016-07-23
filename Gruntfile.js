@@ -196,7 +196,7 @@ module.exports = function (grunt) {
         command: 'ditto -c -k --sequesterRsrc --keepParent "<%= OSX_FILENAME %>" "release/' + BASENAME + '-Mac.zip"',
       },
       install: {
-        command: 'npm install --production',
+        command: 'npm install --production && npm link pokemon-go-node-api',
         options: {
           execOptions: {
             cwd: 'build/'
@@ -250,8 +250,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('lint', ['eslint']);
   grunt.registerTask('default', ['newer:babel', 'eslint', 'less', 'newer:copy:dev', 'shell:install', 'shell:electron', 'watchChokidar']);
-  grunt.registerTask('release', ['clean:release', 'babel', 'eslint', 'less', 'copy:dev', 'shell:install', 'electron:osx', 'copy:osx', 'shell:sign', 'shell:zip']);
-  // grunt.registerTask('release', ['clean:release', 'babel', 'eslint', 'less', 'copy:dev', 'shell:install', 'electron', 'copy:osx', 'shell:sign', 'shell:zip', 'copy:windows', 'rcedit:exes', 'compress']);
+  grunt.registerTask('release', ['clean:release', 'babel', 'eslint', 'less', 'copy:dev', 'shell:install', 'electron', 'copy:osx', 'shell:sign', 'shell:zip', 'copy:windows', 'rcedit:exes', 'compress']);
 
   process.on('SIGINT', function () {
     grunt.task.run(['shell:electron:kill']);
