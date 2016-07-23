@@ -13,8 +13,8 @@ class PokemonInfo extends Component {
         const pad = '00';
         min = pad.substring(0, pad.length - min.length) + min;
         sec = pad.substring(0, pad.length - sec.length) + sec;
-        info.push((<div>Lure By: {fort.lure.deployer}</div>));
-        info.push((<div>Expires in {min}:{sec}</div>));
+        info.push((<div>Lure Expires in {min}:{sec}</div>));
+        info.push((<div><small>Current Pokemon: {fort.lure.pokemon.name}</small></div>));
       } else {
         info.push((<small>No Lure</small>));
       }
