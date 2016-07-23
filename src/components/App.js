@@ -24,7 +24,6 @@ class App extends Component {
           longitude: position.coords.longitude
         }
       });
-      console.log(position);
     }, (result) => {
       console.error(result);
       if (attempts < 2) {

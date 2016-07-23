@@ -92,7 +92,7 @@ class Map extends Component {
             lng: pokemon.longitude
           },
           icon,
-          zIndex: 1000
+          zIndex: 1000 + i
         };
         let info;
         if (this.state.activeMarker === pokemon.id) {
@@ -148,7 +148,7 @@ class Map extends Component {
             lng: fort.longitude
           },
           icon,
-          zIndex: 1
+          zIndex: 100 + i
         };
         let info;
         if (this.state.activeMarker === fort.id) {

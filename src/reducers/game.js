@@ -7,6 +7,9 @@ export function game(state = {}, action) {
       if (action.status.success) {
         let nearbyPokemon = [];
         let nearbyForts = [];
+        if (action.hb.cells.length !== 21) {
+          console.warn('Response from API does not contain all s2Cells sent');
+        }
         for (const cell of action.hb.cells) {
           for (const mp of cell.MapPokemon) {
             const pokemon = { ...action.pokemonlist[parseInt(mp.PokedexTypeId, 10) - 1] };
@@ -45,15 +48,6 @@ export function game(state = {}, action) {
                 expires: parseInt(ft.LureInfo.LureExpiresTimestampMs, 10),
                 deployer: ft.LureInfo.DeployerPlayerCodename
               };
-              if (fort.lure.pokemon) {
-                fort.lure.pokemon.id = `${fort.id}:Lure:${fort.lure.pokemon.id}`;
-                nearbyPokemon.push({
-                  ...fort.lure.pokemon,
-                  latitude: fort.latitude,
-                  longitude: fort.longitude,
-                  expires: fort.lure.expires
-                });
-              }
             }
             nearbyForts.push(fort);
           }
@@ -70,7 +64,6 @@ export function game(state = {}, action) {
           }
           return p;
         }, []);
-        console.log(nearbyPokemon);
         nextState = Object.assign({}, state, { nearbyPokemon, nearbyForts });
       } else {
         nextState = Object.assign({}, state, { error: action.status.message });
