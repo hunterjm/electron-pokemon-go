@@ -1,14 +1,29 @@
 import React, { PropTypes, Component } from 'react';
 import { default as raf } from 'raf';
-import { GoogleMapLoader, GoogleMap, Circle, InfoWindow, Marker } from 'react-google-maps';
+import { GoogleMapLoader, GoogleMap, Circle, InfoWindow, SearchBox, Marker } from 'react-google-maps';
 import PokemonInfo from './PokemonInfo';
 import FortInfo from './FortInfo';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import * as LocationActions from '../actions/location';
 import * as GameActions from '../actions/game';
 
 class Map extends Component {
+
+  static inputStyle = {
+    border: '1px solid transparent',
+    borderRadius: '1px',
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+    boxSizing: 'border-box',
+    MozBoxSizing: 'border-box',
+    fontSize: '14px',
+    height: '32px',
+    marginTop: '27px',
+    outline: 'none',
+    padding: '0 12px',
+    textOverflow: 'ellipses',
+    width: '400px',
+  };
+
   constructor(props, context) {
     super(props, context);
     this.state = {
@@ -40,7 +55,28 @@ class Map extends Component {
         longitude: event.latLng.lng()
       }
     });
-    this.props.heartbeat();
+    if (this.props.account.loggedIn) {
+      this.props.heartbeat();
+    }
+  }
+
+  handlePlacesChanged() {
+    const places = this.refs.searchBox.getPlaces();
+    if (this._googleMapComponent && places.length) {
+      const lat = places[0].geometry.location.lat();
+      const lng = places[0].geometry.location.lng();
+      this.props.setLocation({
+        type: 'coords',
+        coords: {
+          latitude: lat,
+          longitude: lng
+        }
+      });
+      this._googleMapComponent.panTo(new window.google.maps.LatLng(lat, lng));
+      if (this.props.account.loggedIn) {
+        this.props.heartbeat();
+      }
+    }
   }
 
   handleMarkerClick(id) {
@@ -134,7 +170,7 @@ class Map extends Component {
           }
         } else {
           icon = {
-            url: `team${parseInt(fort.team, 10)}.png`,
+            url: `team${parseInt(fort.team, 10) || 0}.png`,
             scaledSize: {
               width: size,
               height: size
@@ -153,8 +189,8 @@ class Map extends Component {
         let info;
         if (this.state.activeMarker === fort.id) {
           info = (
-            <InfoWindow key={`${fort.id}Info`} onCloseclick={::this.handleMarkerClose}>
-              <FortInfo fort={fort} />
+            <InfoWindow key={`${fort.id}InfoWindow`} onCloseclick={::this.handleMarkerClose}>
+              <FortInfo fort={fort} fortDetails={this.props.fortDetails} spinFort={this.props.spinFort} />
             </InfoWindow>
           );
         }
@@ -182,6 +218,14 @@ class Map extends Component {
             center={this._googleMapComponent && this._googleMapComponent.getCenter() || center}
             onClick={::this.handleMapClick}
           >
+            <SearchBox
+              bounds={this.state.bounds}
+              controlPosition={window.google.maps.ControlPosition.TOP_CENTER}
+              onPlacesChanged={::this.handlePlacesChanged}
+              ref="searchBox"
+              placeholder="Search"
+              style={Map.inputStyle}
+            />
             {contents}
           </GoogleMap>
         }
@@ -192,9 +236,12 @@ class Map extends Component {
 
 Map.propTypes = {
   game: PropTypes.object.isRequired,
+  account: PropTypes.object.isRequired,
   location: PropTypes.object.isRequired,
   setLocation: PropTypes.func.isRequired,
-  heartbeat: PropTypes.func.isRequired
+  heartbeat: PropTypes.func.isRequired,
+  fortDetails: PropTypes.func.isRequired,
+  spinFort: PropTypes.func.isRequired
 };
 
 Map.contextTypes = {
@@ -204,12 +251,13 @@ Map.contextTypes = {
 function mapStateToProps(state) {
   return {
     game: state.game,
-    location: state.location
+    account: state.account,
+    location: state.game.location || {}
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ ...LocationActions, ...GameActions }, dispatch);
+  return bindActionCreators(GameActions, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Map);

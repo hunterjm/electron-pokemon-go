@@ -18,8 +18,7 @@ class Player extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    return (nextProps.account.profile !== this.props.account.profile
-      || nextProps.game.heartbeat !== this.props.game.heartbeat);
+    return nextProps.account.profile !== this.props.account.profile;
   }
 
   componentWillUnmount() {
@@ -62,7 +61,7 @@ function mapStateToProps(state) {
   return {
     account: state.account,
     game: state.game,
-    location: state.location
+    location: state.game.location || {}
   };
 }
 

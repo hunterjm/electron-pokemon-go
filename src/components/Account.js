@@ -140,7 +140,7 @@ Account.contextTypes = {
 function mapStateToProps(state) {
   const props = {
     account: state.account,
-    location: state.location
+    location: state.game.location || {}
   };
   if (state.account.message) {
     props.errors = { detail: state.account.message };

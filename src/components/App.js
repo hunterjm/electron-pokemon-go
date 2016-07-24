@@ -4,10 +4,7 @@ import { Grid, Row, Col } from 'react-bootstrap';
 import Map from './Map';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import * as LocationActions from '../actions/location';
-
-// const geolocation = (canUseDOM && navigator.geolocation);
-let attempts = 0;
+import * as GameActions from '../actions/game';
 
 class App extends Component {
   componentDidMount() {
@@ -15,7 +12,6 @@ class App extends Component {
   }
 
   getLocation() {
-    const self = this;
     navigator.geolocation.getCurrentPosition((position) => {
       this.props.setLocation({
         type: 'coords',
@@ -26,18 +22,10 @@ class App extends Component {
       });
     }, (result) => {
       console.error(result);
-      if (attempts < 2) {
-        attempts++;
-        setTimeout(() => self.getLocation(), 500);
-      } else {
-        this.props.setLocation({
-          type: 'coords',
-          coords: {
-            latitude: 35.006711942342534,
-            longitude: -80.84641456604004
-          }
-        });
-      }
+      this.props.setLocation({
+        type: 'name',
+        name: 'Charlotte, NC'
+      });
     });
   }
 
@@ -69,12 +57,12 @@ App.contextTypes = {
 
 function mapStateToProps(state) {
   return {
-    location: state.location
+    location: state.game.location || {}
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators(LocationActions, dispatch);
+  return bindActionCreators(GameActions, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

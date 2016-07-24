@@ -1,12 +1,19 @@
-import { HEARTBEAT } from '../actions/game';
+import { SET_LOCATION, HEARTBEAT, FORT_DETAILS, SPIN_FORT } from '../actions/game';
+import { findIndex } from 'lodash';
 
 export function game(state = {}, action) {
   let nextState;
   switch (action.type) {
-    case HEARTBEAT:
+    case SET_LOCATION:
+      return Object.assign({}, state, {
+        location: action.location,
+        nearbyForts: [],
+        nearbyPokemon: []
+      });
+    case HEARTBEAT: {
       if (action.status.success) {
         let nearbyPokemon = [];
-        let nearbyForts = [];
+        let nearbyForts = state.nearbyForts ? [...state.nearbyForts] : [];
         if (action.hb.cells.length !== 21) {
           console.warn('Response from API does not contain all s2Cells sent');
         }
@@ -38,6 +45,7 @@ export function game(state = {}, action) {
               longitude: ft.Longitude,
               pokemon: ft.GuardPokemonId && { ...action.pokemonlist[parseInt(ft.GuardPokemonId, 10) - 1] } || null,
               reputation: ft.GymPoints && parseInt(ft.GymPoints, 10) || null,
+              enabled: ft.Enabled,
               inBattle: ft.IsInBattle || 0,
               lure: null
             };
@@ -49,7 +57,12 @@ export function game(state = {}, action) {
                 deployer: ft.LureInfo.DeployerPlayerCodename
               };
             }
-            nearbyForts.push(fort);
+            const i = findIndex(nearbyForts, { id: fort.id });
+            if (i !== -1) {
+              nearbyForts[i] = Object.assign({}, nearbyForts[i], fort);
+            } else {
+              nearbyForts.push(fort);
+            }
           }
         }
         nearbyPokemon = nearbyPokemon.reduce((p, c) => {
@@ -69,6 +82,34 @@ export function game(state = {}, action) {
         nextState = Object.assign({}, state, { error: action.status.message });
       }
       return nextState;
+    }
+    case FORT_DETAILS: {
+      if (action.status.success) {
+        const nearbyForts = state.nearbyForts ? [...state.nearbyForts] : [];
+        const i = findIndex(nearbyForts, { id: action.result.fort_id });
+        if (i !== -1) {
+          nearbyForts[i] = Object.assign({}, nearbyForts[i], {
+            name: action.result.name,
+            description: action.result.description,
+            images: action.result.image_urls
+          });
+          nextState = Object.assign({}, state, { nearbyForts });
+        }
+      } else {
+        nextState = Object.assign({}, state, { error: action.status.message });
+      }
+      return nextState;
+    }
+    case SPIN_FORT: {
+      if (action.status.success) {
+        const forts = { ...state.forts };
+        forts[action.result.fort_id].items = action.result;
+        nextState = Object.assign({}, state, { forts });
+      } else {
+        nextState = Object.assign({}, state, { error: action.status.message });
+      }
+      return nextState;
+    }
     default:
       return state;
   }

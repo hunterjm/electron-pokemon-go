@@ -11,8 +11,6 @@
     "react/prefer-stateless-function": 0,
     "consistent-return": 0,
     "no-console": 0,
-    "new-cap": [2, {
-      "capIsNewExceptions": ["GetProfileAsync", "HeartbeatAsync", "SetLocationAsync"]
-    }]
+    "new-cap": 0
   }
 }

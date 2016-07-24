@@ -1,8 +1,15 @@
 import React, { PropTypes, Component } from 'react';
 
-class PokemonInfo extends Component {
+class FortInfo extends Component {
+  shouldComponentUpdate(nextProps) {
+    return nextProps.fort !== this.props.fort;
+  }
   render() {
     const fort = this.props.fort;
+    if (!fort.name) {
+      // Get fort details
+      this.props.fortDetails(fort.id, fort.latitude, fort.longitude);
+    }
     const type = fort.type ? 'PokeStop' : 'Gym';
     const info = [];
     if (fort.type) {
@@ -42,15 +49,18 @@ class PokemonInfo extends Component {
     }
     return (
       <div>
-        <strong>{type}</strong>
+        <strong>{fort.name || type}</strong>
+        <div>{fort.description}</div>
         <div>{info}</div>
       </div>
     );
   }
 }
 
-PokemonInfo.propTypes = {
-  fort: PropTypes.object.isRequired
+FortInfo.propTypes = {
+  fort: PropTypes.object.isRequired,
+  fortDetails: PropTypes.func.isRequired,
+  spinFort: PropTypes.func.isRequired
 };
 
-export default PokemonInfo;
+export default FortInfo;
