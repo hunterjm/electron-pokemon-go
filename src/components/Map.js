@@ -366,7 +366,7 @@ class Map extends Component {
         if (this.state.activeMarker === fort.id) {
           info = (
             <InfoWindow key={`${fort.id}Info`} onCloseclick={::this.handleMarkerClose}>
-              <FortInfo fort={fort} />
+              <FortInfo fort={fort} fortDetails={this.props.fortDetails} spinFort={this.props.spinFort} />
             </InfoWindow>
           );
         }
@@ -417,7 +417,9 @@ Map.propTypes = {
   account: PropTypes.object.isRequired,
   location: PropTypes.object.isRequired,
   setLocation: PropTypes.func.isRequired,
-  heartbeat: PropTypes.func.isRequired
+  heartbeat: PropTypes.func.isRequired,
+  fortDetails: PropTypes.func.isRequired,
+  spinFort: PropTypes.func.isRequired
 };
 
 Map.contextTypes = {
