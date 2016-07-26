@@ -6,7 +6,6 @@ import PokemonInfo from './PokemonInfo';
 import FortInfo from './FortInfo';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import * as LocationActions from '../actions/location';
 import * as GameActions from '../actions/game';
 
 class Map extends Component {
@@ -415,6 +414,7 @@ class Map extends Component {
 
 Map.propTypes = {
   game: PropTypes.object.isRequired,
+  account: PropTypes.object.isRequired,
   location: PropTypes.object.isRequired,
   setLocation: PropTypes.func.isRequired,
   heartbeat: PropTypes.func.isRequired
@@ -427,12 +427,13 @@ Map.contextTypes = {
 function mapStateToProps(state) {
   return {
     game: state.game,
-    location: state.location
+    account: state.account,
+    location: state.game.location || {}
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ ...LocationActions, ...GameActions }, dispatch);
+  return bindActionCreators(GameActions, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Map);
