@@ -13,7 +13,7 @@ export function game(state = {}, action) {
     case HEARTBEAT: {
       if (action.status.success) {
         let nearbyPokemon = [];
-        let nearbyForts = state.nearbyForts ? [...state.nearbyForts] : [];
+        let nearbyForts = Object.assign([], state.nearbyForts);
         if (action.hb.cells.length !== 21) {
           console.warn('Response from API does not contain all s2Cells sent');
         }
@@ -85,7 +85,7 @@ export function game(state = {}, action) {
     }
     case FORT_DETAILS: {
       if (action.status.success) {
-        const nearbyForts = state.nearbyForts ? [...state.nearbyForts] : [];
+        const nearbyForts = Object.assign([], state.nearbyForts);
         const i = findIndex(nearbyForts, { id: action.result.fort_id });
         if (i !== -1) {
           nearbyForts[i] = Object.assign({}, nearbyForts[i], {
@@ -102,7 +102,7 @@ export function game(state = {}, action) {
     }
     case SPIN_FORT: {
       if (action.status.success) {
-        const forts = { ...state.forts };
+        const forts = Object.assign({}, state.forts);
         forts[action.result.fort_id].items = action.result;
         nextState = Object.assign({}, state, { forts });
       } else {

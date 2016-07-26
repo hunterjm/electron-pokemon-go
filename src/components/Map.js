@@ -1,14 +1,15 @@
 import React, { PropTypes, Component } from 'react';
 import { default as raf } from 'raf';
-import { GoogleMapLoader, GoogleMap, Circle, InfoWindow, SearchBox, Marker } from 'react-google-maps';
+import { GoogleMapLoader, GoogleMap, Circle,
+  DirectionsRenderer, InfoWindow, SearchBox, Marker } from 'react-google-maps';
 import PokemonInfo from './PokemonInfo';
 import FortInfo from './FortInfo';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import * as LocationActions from '../actions/location';
 import * as GameActions from '../actions/game';
 
 class Map extends Component {
-
   static inputStyle = {
     border: '1px solid transparent',
     borderRadius: '1px',
@@ -21,7 +22,13 @@ class Map extends Component {
     outline: 'none',
     padding: '0 12px',
     textOverflow: 'ellipses',
-    width: '400px',
+    width: '400px'
+  };
+
+  static overlayView = {
+    background: 'white',
+    border: '1px solid #ccc',
+    padding: 15
   };
 
   constructor(props, context) {
@@ -29,7 +36,10 @@ class Map extends Component {
     this.state = {
       content: null,
       radius: 0,
-      activeMarker: null
+      activeMarker: null,
+      directionsInfo: null,
+      directions: null,
+      steps: []
     };
   }
 
@@ -47,35 +57,202 @@ class Map extends Component {
     raf(tick);
   }
 
-  handleMapClick(event) {
-    this.props.setLocation({
-      type: 'coords',
-      coords: {
-        latitude: event.latLng.lat(),
-        longitude: event.latLng.lng()
+  getDirections(lat, lng, travelMode) {
+    const { latitude, longitude } = this.props.location.coords;
+    const origin = new window.google.maps.LatLng(latitude, longitude);
+    const destination = new window.google.maps.LatLng(lat, lng);
+    const DirectionsService = new window.google.maps.DirectionsService();
+
+    let steps = [];
+
+    DirectionsService.route({
+      origin,
+      destination,
+      travelMode,
+    }, (result, status) => {
+      if (status === window.google.maps.DirectionsStatus.OK) {
+        let distance = 0;
+        let duration = 0;
+        for (const leg of result.routes[0].legs) {
+          distance += leg.distance.value;
+          duration += leg.duration.value;
+          for (const step of leg.steps) {
+            for (const latLng of step.lat_lngs) {
+              const point = {
+                latitude: latLng.lat(),
+                longitude: latLng.lng()
+              };
+              if (steps.length) {
+                point.duration = Math.round(
+                  this.calculateDistance(point, steps[steps.length - 1]) / distance * duration);
+              } else {
+                point.duration = 0;
+              }
+              steps.push(point);
+            }
+          }
+        }
+        steps = this.splitSteps(steps);
+        steps = steps.reduce((p, c) => {
+          if (c.duration > 0) p.push(c);
+          return p;
+        }, []);
+        let running = 0;
+        for (const step of steps) {
+          running += step.duration;
+          step.timeout = setTimeout(() => {
+            this.props.setLocation({
+              type: 'coords',
+              coords: { ...step }
+            });
+            step.timeout = null;
+          }, running * 1000);
+        }
+        if (this._googleMapComponent) {
+          const map = this._googleMapComponent.props.map;
+          console.log(map.controls[window.google.maps.ControlPosition.BOTTOM_CENTER]);
+          const controlDiv = document.createElement('div');
+          controlDiv.index = 1;
+
+          // Set CSS for the control border.
+          const controlUI = document.createElement('div');
+          controlUI.style.backgroundColor = '#fff';
+          controlUI.style.border = '2px solid #fff';
+          controlUI.style.borderRadius = '3px';
+          controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+          controlUI.style.cursor = 'pointer';
+          controlUI.style.marginBottom = '22px';
+          controlUI.style.textAlign = 'center';
+          controlUI.title = 'Click to recenter the map';
+          controlDiv.appendChild(controlUI);
+
+          // Set CSS for the control interior.
+          const controlText = document.createElement('div');
+          controlText.style.color = 'rgb(25,25,25)';
+          controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+          controlText.style.fontSize = '16px';
+          controlText.style.lineHeight = '38px';
+          controlText.style.paddingLeft = '5px';
+          controlText.style.paddingRight = '5px';
+          controlText.innerHTML = 'Cancel Directions';
+          controlUI.appendChild(controlText);
+
+          // Setup the click event listeners: simply set the map to Chicago.
+          controlUI.addEventListener('click', () => {
+            this.cancelDirections();
+          });
+
+          map.controls[window.google.maps.ControlPosition.BOTTOM_CENTER].push(controlDiv);
+        }
+        this.setState({
+          directionsInfo: null,
+          directions: result,
+          steps
+        });
+      } else {
+        console.error(result);
       }
     });
-    if (this.props.account.loggedIn) {
-      this.props.heartbeat();
+  }
+
+  cancelDirections() {
+    if (this._googleMapComponent) {
+      this._googleMapComponent.props.map.controls[window.google.maps.ControlPosition.BOTTOM_CENTER].pop();
     }
+    for (const step of this.state.steps) {
+      if (step.timeout) clearTimeout(step.timeout);
+    }
+    this.setState({ directions: null, steps: [] });
+  }
+
+  calculateDistance(origin, destination) {
+    const R = 6371000; // metres
+    const lat1 = this.toRadians(origin.latitude);
+    const lat2 = this.toRadians(destination.latitude);
+    const latDelta = this.toRadians(destination.latitude - origin.latitude);
+    const lngDelta = this.toRadians(destination.longitude - origin.longitude);
+
+    const a = Math.sin(latDelta / 2) * Math.sin(latDelta / 2) +
+            Math.cos(lat1) * Math.cos(lat2) *
+            Math.sin(lngDelta / 2) * Math.sin(lngDelta / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  }
+
+  toRadians(degrees) {
+    return degrees * Math.PI / 180;
+  }
+
+  splitSteps(steps) {
+    // We need to split up any step with duration > 30 (or heartbeat timer)
+    let newSteps = [];
+    let modified = false;
+
+    for (const step of steps) {
+      if (step.duration < 5) {
+        newSteps.push(step);
+        continue;
+      }
+      const prevStep = newSteps[newSteps.length - 1];
+      const newDuration = Math.round(step.duration / 2);
+      newSteps.push({
+        latitude: ((step.latitude - prevStep.latitude) / 2) + prevStep.latitude,
+        longitude: ((step.longitude - prevStep.longitude) / 2) + prevStep.longitude,
+        duration: newDuration
+      });
+      newSteps.push({
+        latitude: step.latitude,
+        longitude: step.longitude,
+        duration: newDuration
+      });
+      modified = true;
+    }
+
+    if (modified) {
+      newSteps = this.splitSteps(newSteps);
+    }
+    return newSteps;
+  }
+
+  handleMapClick(event) {
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+    const directionsInfo = (
+      <InfoWindow position={event.latLng} onCloseclick={this.setState({ directionsInfo: null })}>
+        <div>
+          <button
+            onClick={() => this.getDirections(lat, lng, window.google.maps.TravelMode.WALKING)}
+          >Walk</button>
+          <button
+            onClick={() => this.getDirections(lat, lng, window.google.maps.TravelMode.DRIVING)}
+          >Drive</button>
+          <button
+            onClick={() => {
+              this.props.setLocation({
+                type: 'coords',
+                coords: {
+                  latitude: lat,
+                  longitude: lng
+                }
+              });
+              this.setState({ directionsInfo: null });
+              if (this.props.account.loggedIn) {
+                this.props.heartbeat();
+              }
+            }}
+          >Teleport</button>
+        </div>
+      </InfoWindow>
+    );
+    this.setState({ directionsInfo });
   }
 
   handlePlacesChanged() {
     const places = this.refs.searchBox.getPlaces();
     if (this._googleMapComponent && places.length) {
-      const lat = places[0].geometry.location.lat();
-      const lng = places[0].geometry.location.lng();
-      this.props.setLocation({
-        type: 'coords',
-        coords: {
-          latitude: lat,
-          longitude: lng
-        }
-      });
-      this._googleMapComponent.panTo(new window.google.maps.LatLng(lat, lng));
-      if (this.props.account.loggedIn) {
-        this.props.heartbeat();
-      }
+      this._googleMapComponent.panTo(places[0].geometry.location);
+      this.handleMapClick({ latLng: places[0].geometry.location });
     }
   }
 
@@ -170,7 +347,7 @@ class Map extends Component {
           }
         } else {
           icon = {
-            url: `team${parseInt(fort.team, 10) || 0}.png`,
+            url: `team${parseInt(fort.team, 10)}.png`,
             scaledSize: {
               width: size,
               height: size
@@ -189,8 +366,8 @@ class Map extends Component {
         let info;
         if (this.state.activeMarker === fort.id) {
           info = (
-            <InfoWindow key={`${fort.id}InfoWindow`} onCloseclick={::this.handleMarkerClose}>
-              <FortInfo fort={fort} fortDetails={this.props.fortDetails} spinFort={this.props.spinFort} />
+            <InfoWindow key={`${fort.id}Info`} onCloseclick={::this.handleMarkerClose}>
+              <FortInfo fort={fort} />
             </InfoWindow>
           );
         }
@@ -226,6 +403,8 @@ class Map extends Component {
               placeholder="Search"
               style={Map.inputStyle}
             />
+            {this.state.directionsInfo}
+            {this.state.directions ? <DirectionsRenderer directions={this.state.directions} /> : null}
             {contents}
           </GoogleMap>
         }
@@ -236,12 +415,9 @@ class Map extends Component {
 
 Map.propTypes = {
   game: PropTypes.object.isRequired,
-  account: PropTypes.object.isRequired,
   location: PropTypes.object.isRequired,
   setLocation: PropTypes.func.isRequired,
-  heartbeat: PropTypes.func.isRequired,
-  fortDetails: PropTypes.func.isRequired,
-  spinFort: PropTypes.func.isRequired
+  heartbeat: PropTypes.func.isRequired
 };
 
 Map.contextTypes = {
@@ -251,13 +427,12 @@ Map.contextTypes = {
 function mapStateToProps(state) {
   return {
     game: state.game,
-    account: state.account,
-    location: state.game.location || {}
+    location: state.location
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators(GameActions, dispatch);
+  return bindActionCreators({ ...LocationActions, ...GameActions }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Map);
