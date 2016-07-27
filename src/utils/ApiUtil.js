@@ -7,6 +7,7 @@ const remote = electron.remote;
 const app = remote.app;
 
 const api = Promise.promisifyAll(new Pokeio());
+let timer;
 
 export default {
   getApi() {
@@ -27,5 +28,17 @@ export default {
   },
   saveAccount(account) {
     fs.writeFileSync(path.join(app.getPath('userData'), 'account'), JSON.stringify(account));
+  },
+  setTimer(callback, interval) {
+    if (timer) {
+      clearInterval(timer);
+    }
+    timer = setInterval(() => { callback(); }, interval);
+  },
+  clearTimer() {
+    if (timer) {
+      clearInterval(timer);
+      timer = undefined;
+    }
   }
 };

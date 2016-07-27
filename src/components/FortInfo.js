@@ -1,17 +1,31 @@
 import React, { PropTypes, Component } from 'react';
 
+let countdown;
+
 class FortInfo extends Component {
-  shouldComponentUpdate(nextProps) {
-    return nextProps.fort !== this.props.fort;
+  constructor(props, context) {
+    super(props, context);
+    this.state = {
+      counter: 0
+    };
+  }
+  componentDidMount() {
+    if (!this.props.fort.name) {
+      // Get fort details
+      this.props.fortDetails(this.props.fort.id, this.props.fort.latitude, this.props.fort.longitude);
+    }
+    countdown = setInterval(() => {
+      this.setState({ counter: 1 });
+    }, 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(countdown);
+    countdown = null;
   }
   render() {
     const fort = this.props.fort;
-    if (!fort.name) {
-      // Get fort details
-      this.props.fortDetails(fort.id, fort.latitude, fort.longitude);
-    }
     const type = fort.type ? 'PokeStop' : 'Gym';
-    const info = [];
+    let info;
     if (fort.type) {
       if (fort.lure) {
         const now = new Date().getTime();
@@ -20,10 +34,14 @@ class FortInfo extends Component {
         const pad = '00';
         min = pad.substring(0, pad.length - min.length) + min;
         sec = pad.substring(0, pad.length - sec.length) + sec;
-        info.push((<div>Lure Expires in {min}:{sec}</div>));
-        info.push((<div><small>Current Pokemon: {fort.lure.pokemon.name}</small></div>));
+        info = (
+          <span>
+            <div>Lure Expires in {min}:{sec}</div>
+            <div><small>Current Pokemon: {fort.lure.pokemon.name}</small></div>
+          </span>
+        );
       } else {
-        info.push((<small>No Lure</small>));
+        info = (<small>No Lure</small>);
       }
     } else {
       let team;
@@ -40,12 +58,14 @@ class FortInfo extends Component {
         default:
           team = 'Unoccupied';
       }
-      info.push((<div>Team: {team}</div>));
-      info.push((<div>Reputation: {fort.reputation || 0}</div>));
-      info.push((<div>Gym Leader: {fort.pokemon.name}</div>));
-      if (fort.inBattle) {
-        info.push((<div><small>In Battle</small></div>));
-      }
+      info = (
+        <span>
+          <div>Team: {team}</div>
+          <div>Reputation: {fort.reputation || 0}</div>
+          <div>Gym Leader: {fort.pokemon.name}</div>
+          {fort.inBattle ? <div><small>In Battle</small></div> : null}
+        </span>
+      );
     }
     return (
       <div>

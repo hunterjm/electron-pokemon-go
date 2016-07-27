@@ -1,6 +1,23 @@
 import React, { PropTypes, Component } from 'react';
 
+let countdown;
+
 class PokemonInfo extends Component {
+  constructor(props, context) {
+    super(props, context);
+    this.state = {
+      counter: 0
+    };
+  }
+  componentDidMount() {
+    countdown = setInterval(() => {
+      this.setState({ counter: 1 });
+    }, 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(countdown);
+    countdown = null;
+  }
   render() {
     const pokemon = this.props.pokemon;
     const now = new Date().getTime();

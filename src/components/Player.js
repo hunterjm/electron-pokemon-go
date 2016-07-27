@@ -2,10 +2,9 @@ import React, { PropTypes, Component } from 'react';
 import { PageHeader } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { setTimer, clearTimer } from '../Utils/ApiUtil';
 import * as AccountActions from '../actions/account';
 import * as GameActions from '../actions/game';
-
-let heartbeatTimer;
 
 class Player extends Component {
   componentWillMount() {
@@ -14,7 +13,7 @@ class Player extends Component {
 
   componentDidMount() {
     this.props.heartbeat();
-    heartbeatTimer = setInterval(this.props.heartbeat, 30000);
+    setTimer(this.props.heartbeat, 30000);
   }
 
   shouldComponentUpdate(nextProps) {
@@ -22,10 +21,7 @@ class Player extends Component {
   }
 
   componentWillUnmount() {
-    if (heartbeatTimer) {
-      clearInterval(heartbeatTimer);
-      heartbeatTimer = undefined;
-    }
+    clearTimer();
   }
 
   render() {
