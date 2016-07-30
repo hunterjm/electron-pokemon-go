@@ -163,7 +163,6 @@ class Map extends Component {
       const width = Math.min(90 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 10), 22);
       const height = Math.min(240 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 10), 60);
       const avatar = this.props.account.profile && this.props.account.profile.avatar;
-      console.log(avatar);
       const icon = {
         url: `avatar${avatar && avatar.gender ? 2 : 1}.png`,
         scaledSize: { width, height }
