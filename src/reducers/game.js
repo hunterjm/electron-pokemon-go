@@ -59,6 +59,7 @@ export function game(state = initialState, action) {
               pokemon: ft.GuardPokemonId && { ...action.pokemonlist[parseInt(ft.GuardPokemonId, 10) - 1] } || null,
               reputation: ft.GymPoints && parseInt(ft.GymPoints, 10) || null,
               enabled: ft.Enabled,
+              cooldown: parseInt(ft.CooldownCompleteMs, 10),
               inBattle: ft.IsInBattle || 0,
               lure: null
             };

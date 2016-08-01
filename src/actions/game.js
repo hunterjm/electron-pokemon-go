@@ -28,6 +28,7 @@ export function heartbeat() {
     try {
       const apiClient = getApi();
       const hb = await apiClient.HeartbeatAsync();
+      console.log(hb);
       dispatch({ type: HEARTBEAT, status: { success: true }, hb, pokemonlist: apiClient.pokemonlist });
     } catch (e) {
       dispatch({ type: HEARTBEAT, status: { success: false, message: e.message } });

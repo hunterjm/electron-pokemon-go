@@ -3,7 +3,7 @@ import { GoogleMapLoader, GoogleMap,
   DirectionsRenderer, InfoWindow, SearchBox, Marker } from 'react-google-maps';
 import PokemonInfo from './PokemonInfo';
 import FortInfo from './FortInfo';
-import { getSteps, createButtonControl } from '../utils/MapUtil';
+import { getSteps, createButtonControl, calculateDistance } from '../utils/MapUtil';
 import { setTimer } from '../Utils/ApiUtil';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -219,7 +219,15 @@ class Map extends Component {
         const size = Math.min(120 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 8), 48);
         let icon;
         if (fort.type) {
-          if (fort.lure) {
+          if (calculateDistance(this.props.location.coords, fort) < 40) {
+            icon = {
+              url: 'pokestop_near.png',
+              scaledSize: {
+                width: size,
+                height: size
+              }
+            };
+          } else if (fort.lure) {
             icon = {
               url: 'pokestop_lure.png',
               scaledSize: {

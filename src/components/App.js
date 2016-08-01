@@ -36,7 +36,7 @@ class App extends Component {
           <Col md={9} style={{ height: '100%' }}>
             <Map />
           </Col>
-          <Col md={3}>
+          <Col md={3} style={{ height: '100%', overflow: 'auto' }}>
             {this.props.children}
           </Col>
         </Row>
