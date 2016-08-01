@@ -52,7 +52,6 @@ export function spinFort(id, lat, lng) {
     try {
       const apiClient = getApi();
       const r = await apiClient.GetFortAsync(id, lat, lng);
-      console.log(r);
       const result = {
         id,
         spun: true,
