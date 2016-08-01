@@ -8,18 +8,25 @@ export const SPIN_FORT = 'SPIN_FORT';
 export function setLocation(location) {
   const apiClient = getApi();
   return async dispatch => {
-    const coords = await apiClient.SetLocationAsync(location);
-    let state = location;
-    if (location.type === 'name') {
-      state = {
-        type: 'coords',
-        coords: {
-          latitude: coords.latitude,
-          longitude: coords.longitude
-        }
-      };
+    try {
+      const coords = await apiClient.SetLocationAsync(location);
+      let state = location;
+      if (location.type === 'name') {
+        state = {
+          type: 'coords',
+          coords: {
+            latitude: coords.latitude,
+            longitude: coords.longitude
+          }
+        };
+      }
+      dispatch({ type: SET_LOCATION, location: state });
+    } catch (e) {
+      if (location.type === 'coords') {
+        // don't care if geocoding failed since we are always using coords
+        dispatch({ type: SET_LOCATION, location });
+      }
     }
-    dispatch({ type: SET_LOCATION, location: state });
   };
 }
 
