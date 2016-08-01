@@ -6,7 +6,8 @@ class FortInfo extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
-      counter: 0
+      counter: 0,
+      loading: false
     };
   }
   componentDidMount() {
@@ -18,19 +19,32 @@ class FortInfo extends Component {
       this.setState({ counter: 1 });
     }, 1000);
   }
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.fort.spun && this.state.loading) {
+      setTimeout(() => { this.props.getJournal(); }, 1000);
+      this.setState({ loading: false });
+    }
+  }
   componentWillUnmount() {
     clearInterval(countdown);
     countdown = null;
+  }
+  spinFort() {
+    this.setState({ loading: true });
+    this.props.spinFort(this.props.fort.id, this.props.fort.latitude, this.props.fort.longitude);
   }
   render() {
     const fort = this.props.fort;
     const type = fort.type ? 'PokeStop' : 'Gym';
     let info;
+    let actions;
     if (fort.type) {
+      const now = new Date().getTime();
+      let min;
+      let sec;
       if (fort.lure) {
-        const now = new Date().getTime();
-        let min = Math.floor((fort.lure.expires - now) / 60 / 1000).toString();
-        let sec = Math.floor(((fort.lure.expires - now) / 1000) - 60 * min).toString();
+        min = Math.floor((fort.lure.expires - now) / 60 / 1000).toString();
+        sec = Math.floor(((fort.lure.expires - now) / 1000) - 60 * min).toString();
         const pad = '00';
         min = pad.substring(0, pad.length - min.length) + min;
         sec = pad.substring(0, pad.length - sec.length) + sec;
@@ -42,6 +56,18 @@ class FortInfo extends Component {
         );
       } else {
         info = (<small>No Lure</small>);
+      }
+      if (this.props.nearby && !this.state.loading) {
+        if (fort.cooldown > now) {
+          min = Math.floor((fort.cooldown - now) / 60 / 1000).toString();
+          sec = Math.floor(((fort.cooldown - now) / 1000) - 60 * min).toString();
+          const pad = '00';
+          min = pad.substring(0, pad.length - min.length) + min;
+          sec = pad.substring(0, pad.length - sec.length) + sec;
+          actions = (<div><small>Cooldown finished in {min}:{sec}</small></div>);
+        } else {
+          actions = (<div><button onClick={() => this.spinFort()}>Get Items</button></div>);
+        }
       }
     } else {
       let team;
@@ -72,6 +98,7 @@ class FortInfo extends Component {
         <strong>{fort.name || type}</strong>
         <div>{fort.description}</div>
         <div>{info}</div>
+        {actions}
       </div>
     );
   }
@@ -79,8 +106,10 @@ class FortInfo extends Component {
 
 FortInfo.propTypes = {
   fort: PropTypes.object.isRequired,
+  nearby: PropTypes.bool.isRequired,
   fortDetails: PropTypes.func.isRequired,
-  spinFort: PropTypes.func.isRequired
+  spinFort: PropTypes.func.isRequired,
+  getJournal: PropTypes.func.isRequired
 };
 
 export default FortInfo;

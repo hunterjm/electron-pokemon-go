@@ -28,7 +28,6 @@ export function heartbeat() {
     try {
       const apiClient = getApi();
       const hb = await apiClient.HeartbeatAsync();
-      console.log(hb);
       dispatch({ type: HEARTBEAT, status: { success: true }, hb, pokemonlist: apiClient.pokemonlist });
     } catch (e) {
       dispatch({ type: HEARTBEAT, status: { success: false, message: e.message } });
@@ -52,7 +51,13 @@ export function spinFort(id, lat, lng) {
   return async dispatch => {
     try {
       const apiClient = getApi();
-      const result = await apiClient.GetFortAsync(id, lat, lng);
+      const r = await apiClient.GetFortAsync(id, lat, lng);
+      console.log(r);
+      const result = {
+        id,
+        spun: true,
+        cooldown: parseInt(r.cooldown_complete_timestamp_ms, 10)
+      };
       dispatch({ type: SPIN_FORT, status: { success: true }, result });
     } catch (e) {
       dispatch({ type: SPIN_FORT, status: { success: false, message: e.message } });

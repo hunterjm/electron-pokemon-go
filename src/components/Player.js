@@ -4,18 +4,18 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import PokemonLog from './PokemonLog';
 import PokestopLog from './PokestopLog';
-import { setTimer, clearTimer } from '../Utils/ApiUtil';
+import { setTimer, clearTimer } from '../utils/ApiUtil';
 import * as AccountActions from '../actions/account';
 import * as GameActions from '../actions/game';
 
 class Player extends Component {
   componentWillMount() {
-    this.props.getProfile();
-    setTimeout(this.props.getJournal, 1000);
+    setTimeout(this.props.getProfile, 500);
+    setTimeout(this.props.getJournal, 1500);
   }
 
   componentDidMount() {
-    this.props.heartbeat();
+    setTimeout(this.props.heartbeat, 1000);
     setTimer(this.props.heartbeat, 30000);
   }
 
@@ -28,10 +28,11 @@ class Player extends Component {
   }
 
   render() {
-    const username = this.props.account.profile.username || 'Profile';
+    const account = this.props.account;
+    const username = account && account.profile && account.profile.username || 'Profile';
     let contents = [];
-    if (this.props.account.journal && this.props.account.journal.length) {
-      contents = contents.concat(this.props.account.journal.map((entry, i) => {
+    if (account.journal && account.journal.length) {
+      contents = contents.concat(account.journal.map((entry, i) => {
         const key = `entry${i}`;
         if (entry.action === 'catch_pokemon') {
           return (<PokemonLog key={key} entry={entry} />);

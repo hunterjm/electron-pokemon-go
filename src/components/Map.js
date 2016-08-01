@@ -4,9 +4,10 @@ import { GoogleMapLoader, GoogleMap,
 import PokemonInfo from './PokemonInfo';
 import FortInfo from './FortInfo';
 import { getSteps, createButtonControl, calculateDistance } from '../utils/MapUtil';
-import { setTimer } from '../Utils/ApiUtil';
+import { setTimer } from '../utils/ApiUtil';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import * as AccountActions from '../actions/account';
 import * as GameActions from '../actions/game';
 
 class Map extends Component {
@@ -217,9 +218,10 @@ class Map extends Component {
     if (this.props.game.nearbyForts) {
       contents = contents.concat(this.props.game.nearbyForts.map((fort, i) => {
         const size = Math.min(120 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 8), 48);
+        const nearby = calculateDistance(this.props.location.coords, fort) < 40;
         let icon;
         if (fort.type) {
-          if (calculateDistance(this.props.location.coords, fort) < 40) {
+          if (nearby) {
             icon = {
               url: 'pokestop_near.png',
               scaledSize: {
@@ -266,9 +268,11 @@ class Map extends Component {
         if (this.state.activeMarker === fort.id) {
           info = (
             <InfoWindow key={`${fort.id}Info`} onCloseclick={::this.handleMarkerClose}>
-              <FortInfo fort={fort}
+              <FortInfo
+                fort={fort} nearby={nearby}
                 fortDetails={(id, lat, lng) => { this.props.fortDetails(id, lat, lng); }}
                 spinFort={(id, lat, lng) => { this.props.spinFort(id, lat, lng); }}
+                getJournal={() => { this.props.getJournal(); }}
               />
             </InfoWindow>
           );
@@ -322,7 +326,8 @@ Map.propTypes = {
   setLocation: PropTypes.func.isRequired,
   heartbeat: PropTypes.func.isRequired,
   fortDetails: PropTypes.func.isRequired,
-  spinFort: PropTypes.func.isRequired
+  spinFort: PropTypes.func.isRequired,
+  getJournal: PropTypes.func.isRequired
 };
 
 Map.contextTypes = {
@@ -338,7 +343,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators(GameActions, dispatch);
+  return bindActionCreators({ ...GameActions, ...AccountActions }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Map);

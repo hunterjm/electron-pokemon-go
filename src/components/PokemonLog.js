@@ -8,7 +8,7 @@ class PokemonLog extends Component {
     return (
       <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid lightgrey', marginBottom: '5px' }}>
         <div style={{ width: '45px', height: '100%' }}>
-          <img src={pokemon.img} width={45} height={45} />
+          <img src={pokemon.img} alt={pokemon.name} width={45} height={45} />
         </div>
         <div>
           <div>{pokemon.name} was caught!</div>

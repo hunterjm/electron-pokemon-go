@@ -110,9 +110,10 @@ export function game(state = initialState, action) {
     }
     case SPIN_FORT: {
       if (action.status.success) {
-        const forts = Object.assign({}, state.forts);
-        forts[action.result.fort_id].items = action.result;
-        nextState = Object.assign({}, state, { forts });
+        const nearbyForts = Object.assign([], state.nearbyForts);
+        const i = findIndex(nearbyForts, { id: action.result.id });
+        nearbyForts[i] = Object.assign({}, nearbyForts[i], action.result);
+        nextState = Object.assign({}, state, { nearbyForts });
       } else {
         nextState = Object.assign({}, state, { error: action.status.message });
       }
