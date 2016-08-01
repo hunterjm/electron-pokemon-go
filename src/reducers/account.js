@@ -1,4 +1,4 @@
-import { SAVE_ACCOUNT, LOGIN, GET_PROFILE } from '../actions/account';
+import { SAVE_ACCOUNT, LOGIN, GET_PROFILE, GET_JOURNAL } from '../actions/account';
 import { saveAccount, loadAccount } from '../utils/ApiUtil';
 import { isEmpty } from 'lodash';
 
@@ -10,6 +10,9 @@ export function account(state = {}, action) {
       return nextState;
     case GET_PROFILE:
       nextState = Object.assign({}, state, { profile: action.profile });
+      return nextState;
+    case GET_JOURNAL:
+      nextState = Object.assign({}, state, { journal: action.journal });
       return nextState;
     case SAVE_ACCOUNT:
       nextState = {

@@ -59,6 +59,7 @@ export function game(state = initialState, action) {
               pokemon: ft.GuardPokemonId && { ...action.pokemonlist[parseInt(ft.GuardPokemonId, 10) - 1] } || null,
               reputation: ft.GymPoints && parseInt(ft.GymPoints, 10) || null,
               enabled: ft.Enabled,
+              cooldown: parseInt(ft.CooldownCompleteMs, 10),
               inBattle: ft.IsInBattle || 0,
               lure: null
             };
@@ -109,9 +110,10 @@ export function game(state = initialState, action) {
     }
     case SPIN_FORT: {
       if (action.status.success) {
-        const forts = Object.assign({}, state.forts);
-        forts[action.result.fort_id].items = action.result;
-        nextState = Object.assign({}, state, { forts });
+        const nearbyForts = Object.assign([], state.nearbyForts);
+        const i = findIndex(nearbyForts, { id: action.result.id });
+        nearbyForts[i] = Object.assign({}, nearbyForts[i], action.result);
+        nextState = Object.assign({}, state, { nearbyForts });
       } else {
         nextState = Object.assign({}, state, { error: action.status.message });
       }
