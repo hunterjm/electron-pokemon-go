@@ -23,8 +23,11 @@ class App extends Component {
     }, (result) => {
       console.error(result);
       this.props.setLocation({
-        type: 'name',
-        name: 'Charlotte, NC'
+        type: 'coords',
+        coords: {
+          latitude: 35.2271329,
+          longitude: -80.8430872
+        }
       });
     });
   }
