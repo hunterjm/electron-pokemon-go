@@ -31,7 +31,7 @@ module.exports = function (grunt) {
           version: packagejson['electron-version'],
           platform: 'win32',
           arch: 'x64',
-          asar: false,
+          asar: true,
           icon: 'util/pokemongo.ico'
         }
       },
