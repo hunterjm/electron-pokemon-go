@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pokemon Go</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+    <script>
+      (function() {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = (process.env.HOT) ? 'http://localhost:3000/dist/style.css' : '../dist/style.css';
+        document.write(link.outerHTML);
+      }());
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0naoqPuWAjGs4tddPk1Kttq7BsNKAoVc&libraries=places"></script>
+    <script>
+      (function() {
+        const script = document.createElement('script');
+        script.src = (process.env.HOT) ? 'http://localhost:3000/dist/bundle.js' : '../dist/bundle.js';
+        document.write(script.outerHTML);
+      }());
+    </script>
+  </body>
+</html>
