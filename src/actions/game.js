@@ -1,4 +1,5 @@
-import { getApi } from '../utils/ApiUtil';
+import { getApi, pokemonlist } from '../utils/ApiUtil';
+import { Utils } from 'pogobuf';
 
 export const SET_LOCATION = 'SET_LOCATION';
 export const HEARTBEAT = 'HEARTBEAT';
@@ -7,35 +8,17 @@ export const SPIN_FORT = 'SPIN_FORT';
 
 export function setLocation(location) {
   const apiClient = getApi();
-  return async dispatch => {
-    try {
-      const coords = await apiClient.SetLocationAsync(location);
-      let state = location;
-      if (location.type === 'name') {
-        state = {
-          type: 'coords',
-          coords: {
-            latitude: coords.latitude,
-            longitude: coords.longitude
-          }
-        };
-      }
-      dispatch({ type: SET_LOCATION, location: state });
-    } catch (e) {
-      if (location.type === 'coords') {
-        // don't care if geocoding failed since we are always using coords
-        dispatch({ type: SET_LOCATION, location });
-      }
-    }
-  };
+  apiClient.setPosition(location.coords.latitude, location.coords.longitude);
+  return { type: SET_LOCATION, location };
 }
 
 export function heartbeat() {
   return async dispatch => {
     try {
       const apiClient = getApi();
-      const hb = await apiClient.HeartbeatAsync();
-      dispatch({ type: HEARTBEAT, status: { success: true }, hb, pokemonlist: apiClient.pokemonlist });
+      const cellIDs = Utils.getCellIDs(apiClient.playerLatitude, apiClient.playerLongitude);
+      const hb = await apiClient.getMapObjects(cellIDs, Array(cellIDs.length).fill(0));
+      dispatch({ type: HEARTBEAT, status: { success: true }, hb, pokemonlist });
     } catch (e) {
       dispatch({ type: HEARTBEAT, status: { success: false, message: e.message } });
     }
@@ -46,7 +29,7 @@ export function fortDetails(id, lat, lng) {
   return async dispatch => {
     try {
       const apiClient = getApi();
-      const result = await apiClient.GetFortDetailsAsync(id, lat, lng);
+      const result = await apiClient.fortDetails(id, lat, lng);
       dispatch({ type: FORT_DETAILS, status: { success: true }, result });
     } catch (e) {
       dispatch({ type: FORT_DETAILS, status: { success: false, message: e.message } });
@@ -58,7 +41,7 @@ export function spinFort(id, lat, lng) {
   return async dispatch => {
     try {
       const apiClient = getApi();
-      const r = await apiClient.GetFortAsync(id, lat, lng);
+      const r = await apiClient.fortSearch(id, lat, lng);
       const result = {
         id,
         spun: true,

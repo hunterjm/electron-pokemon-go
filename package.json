@@ -24,7 +24,7 @@
     "babel-polyfill": "^6.6.0",
     "bluebird": "^2.9.24",
     "lodash": "^4.6.1",
-    "pokemon-go-node-api": "git+https://github.com/hunterjm/Pokemon-GO-node-api.git",
+    "pogobuf": "^1.5.0",
     "react": "^15.1.0",
     "react-bootstrap": "^0.29.4",
     "react-dom": "^15.1.0",

@@ -1,4 +1,4 @@
-import { getApi } from '../utils/ApiUtil';
+import { login as apiLogin, pokemonlist, itemlist, getApi } from '../utils/ApiUtil';
 import _ from 'lodash';
 
 export const SAVE_ACCOUNT = 'SAVE_ACCOUNT';
@@ -13,8 +13,8 @@ export function saveAccount(username, password, provider) {
 export function login(username, password, location, provider) {
   return async dispatch => {
     try {
-      const apiClient = getApi();
-      await apiClient.initAsync(username, password, location, provider);
+      const result = await apiLogin(username, password, provider, location);
+      console.log(result);
       dispatch(saveAccount(username, password, provider));
       dispatch({ type: LOGIN, status: { loggedIn: true } });
     } catch (e) {
@@ -27,7 +27,7 @@ export function getJournal() {
   return async dispatch => {
     try {
       const apiClient = getApi();
-      const jr = await apiClient.GetJournalAsync();
+      const jr = await apiClient.sfidaActionLog();
       if (!jr.log_entries) throw new Error('No log entries');
       const journal = jr.log_entries.map((log) => {
         const action = log.Action;
@@ -38,7 +38,7 @@ export function getJournal() {
         if (action === 'catch_pokemon') {
           entry.pokemon = Object.assign(
             {},
-            _.find(apiClient.pokemonlist, { id: log.catch_pokemon.pokemon_id.toString() }),
+            _.find(pokemonlist, { id: log.catch_pokemon.pokemon_id.toString() }),
             { cp: log.catch_pokemon.combat_points }
           );
         } else {
@@ -46,14 +46,14 @@ export function getJournal() {
           for (const item of log.fort_search.items) {
             entry.items.push(Object.assign(
               {},
-              _.find(apiClient.itemlist, { id: item.item_id }),
-              { count: item.item_count }
+              _.find(itemlist, { id: item.item_id }),
+              { count: item.count }
             ));
           }
           if (log.eggs) {
             entry.items.push(Object.assign(
               {},
-              _.find(apiClient.itemlist, { id: 0 }),
+              _.find(itemlist, { id: 0 }),
               { count: log.eggs }
             ));
           }
@@ -75,7 +75,7 @@ export function getProfile() {
   return async dispatch => {
     try {
       const apiClient = getApi();
-      const pr = await apiClient.GetProfileAsync();
+      const pr = await apiClient.getPlayerProfile();
       const profile = {
         username: pr.username,
         created: new Date(pr.creation_time),

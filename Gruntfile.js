@@ -92,7 +92,7 @@ module.exports = function (grunt) {
         files: [{
           expand: true,
           cwd: '.',
-          src: ['package.json', 'settings.json', 'index.html'],
+          src: ['package.json', 'settings.json', 'pokemons.json', 'items.json', 'index.html'],
           dest: 'build/'
         }, {
           expand: true,
