@@ -38,6 +38,7 @@
     "react-router-redux": "^4.0.0",
     "redux": "^3.2.1",
     "redux-thunk": "^1.0.2",
+    "s2-geometry": "hunterjm/s2-geometry.js#bugfix/window-on-electron",
     "validator": "^5.1.0"
   },
   "devDependencies": {
