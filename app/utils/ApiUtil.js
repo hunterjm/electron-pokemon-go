@@ -1,15 +1,30 @@
-import { Pokeio } from 'pokemon-go-node-api';
+import { PTCLogin, GoogleLogin, Client } from 'pogobuf';
 import fs from 'fs';
 import path from 'path';
 import electron from 'electron';
-import Promise from 'bluebird';
 const remote = electron.remote;
 const app = remote.app;
 
-const api = Promise.promisifyAll(new Pokeio());
+const api = new Client();
+const pokemonlist = JSON.parse(fs.readFileSync(`${__dirname}/../pokemons.json`, 'utf8'));
+const itemlist = JSON.parse(fs.readFileSync(`${__dirname}/../items.json`, 'utf8'));
 let timer;
 
 export default {
+  pokemonlist: pokemonlist.pokemon,
+  itemlist: itemlist.items,
+  async login(username, password, provider, location) {
+    let login;
+    if (provider === 'google') {
+      login = new GoogleLogin();
+    } else {
+      login = new PTCLogin();
+    }
+    const token = await login.login(username, password);
+    api.setAuthInfo(provider, token);
+    api.setPosition(location.coords.latitude, location.coords.longitude);
+    return await api.init();
+  },
   getApi() {
     return api;
   },
