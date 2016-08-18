@@ -15,6 +15,15 @@ export function login(username, password, location, provider) {
     try {
       const result = await apiLogin(username, password, provider, location);
       console.log(result);
+      if (result[2].success) {
+        for (const item of result[2].inventory_delta.inventory_items) {
+          if (item.inventory_item_data.player_stats) {
+            const profile = { ...item.inventory_item_data.player_stats };
+            console.log(profile);
+            dispatch({ type: GET_PROFILE, status: { success: true }, profile });
+          }
+        }
+      }
       dispatch(saveAccount(username, password, provider));
       dispatch({ type: LOGIN, status: { loggedIn: true } });
     } catch (e) {

@@ -8,18 +8,20 @@ export function account(state = {}, action) {
     case LOGIN:
       nextState = Object.assign({}, state, action.status);
       return nextState;
-    case GET_PROFILE:
-      nextState = Object.assign({}, state, { profile: action.profile });
+    case GET_PROFILE: {
+      const profile = Object.assign({}, state.profile, action.profile);
+      nextState = Object.assign({}, state, { profile });
       return nextState;
+    }
     case GET_JOURNAL:
-      nextState = Object.assign({}, state, { journal: action.journal });
+      nextState = Object.assign({}, state, { journal: action.journal || {} });
       return nextState;
     case SAVE_ACCOUNT:
-      nextState = {
+      nextState = Object.assign({}, state, {
         username: action.account.username,
         password: action.account.password,
         provider: action.account.provider
-      };
+      });
       saveAccount(nextState);
       return nextState;
     default:
