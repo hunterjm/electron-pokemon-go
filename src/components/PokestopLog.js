@@ -1,5 +1,4 @@
 import React, { PropTypes, Component } from 'react';
-import { Badge } from 'react-bootstrap';
 
 class PokestopLog extends Component {
   render() {
@@ -9,7 +8,7 @@ class PokestopLog extends Component {
     items = items.map((item) => (
       <div key={`Item${item.id}`} style={{ float: 'left', margin: '5px' }}>
         <div><img src={item.img} alt={item.name} width={20} height={20} /></div>
-        <div><small><Badge>{item.count}</Badge></small></div>
+        <div><small><span className={'badge'}>{item.count}</span></small></div>
       </div>
       ));
     const timestamp = new Date(entry.timestamp);

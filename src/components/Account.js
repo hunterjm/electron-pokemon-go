@@ -1,6 +1,5 @@
 import React, { PropTypes, Component } from 'react';
 import ReactDOM from 'react-dom';
-import { PageHeader, FormControl, Button } from 'react-bootstrap';
 import validator from 'validator';
 import _ from 'lodash';
 import { bindActionCreators } from 'redux';
@@ -88,37 +87,38 @@ class Account extends Component {
     const loading = this.state.loading ? <div className="spinner la-ball-clip-rotate la-dark"><div></div></div> : null;
     const fields = (
       <div key="initial-credentials">
-        <FormControl ref="usernameInput" maxLength="30" name="username" placeholder="Username"
+        <input className={'form-control'} ref="usernameInput" maxLength="30" name="username" placeholder="Username"
           defaultValue={this.props.account.username} type="text"
           onChange={this.handleChange.bind(this)} onBlur={this.handleBlur.bind(this)}
         />
         <p className="error-message">{this.state.errors.username}</p>
-        <FormControl ref="passwordInput" name="password" placeholder="Password"
+        <input className={'form-control'} ref="passwordInput" name="password" placeholder="Password"
           defaultValue={this.props.account.password} type="password"
           onChange={this.handleChange.bind(this)} onBlur={this.handleBlur.bind(this)}
         />
         <p className="error-message">{this.state.errors.password}</p>
-        <FormControl componentClass="select" ref="providerSelect" name="provider"
+        <select className={'form-control'} ref="providerSelect" name="provider"
           defaultValue={this.props.account.provider} onChange={this.handleChange.bind(this)}
         >
           <option disabled value="">Provider</option>
           <option value="google">Google</option>
           <option value="ptc">Pokemon Trainer Club</option>
-        </FormControl>
+        </select>
         <p className="error-message">{this.state.errors.provider}</p>
       </div>
     );
     return (
       <div className="form-section">
-        <PageHeader>Login</PageHeader>
+        <h1>Login</h1>
+        <hr />
         <form className="form-connect">
           {fields}
           <p className="error-message">{this.state.errors.detail}</p>
           <div className="submit" style={{ float: 'right' }}>
             {loading}
-            <Button bsStyle="primary" disabled={this.state.loading}
+            <button className={'btn btn-primary'} disabled={this.state.loading}
               onClick={this.handleLogin.bind(this)} type="submit"
-            >Log In</Button>
+            >Log In</button>
           </div>
         </form>
       </div>

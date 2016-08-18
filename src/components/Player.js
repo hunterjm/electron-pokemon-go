@@ -1,5 +1,4 @@
 import React, { PropTypes, Component } from 'react';
-import { PageHeader } from 'react-bootstrap';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import PokemonLog from './PokemonLog';
@@ -42,7 +41,8 @@ class Player extends Component {
     }
     return (
       <div className="form-section">
-        <PageHeader>{username}</PageHeader>
+        <h1>{username}</h1>
+        <hr />
         {contents}
       </div>
     );
