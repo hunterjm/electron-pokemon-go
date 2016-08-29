@@ -3,9 +3,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import PokemonLog from './PokemonLog';
 import PokestopLog from './PokestopLog';
-import { setTimer, clearTimer } from '../utils/ApiUtil';
 import * as AccountActions from '../actions/account';
-import * as GameActions from '../actions/game';
 
 class Journal extends Component {
   componentWillMount() {
@@ -13,17 +11,8 @@ class Journal extends Component {
     setTimeout(this.props.getJournal, 1500);
   }
 
-  componentDidMount() {
-    setTimeout(this.props.heartbeat, 1000);
-    setTimer(this.props.heartbeat, 30000);
-  }
-
   shouldComponentUpdate(nextProps) {
-    return nextProps.account !== this.props.account;
-  }
-
-  componentWillUnmount() {
-    clearTimer();
+    return nextProps.account.journal !== this.props.account.journal;
   }
 
   render() {
@@ -49,7 +38,6 @@ class Journal extends Component {
 Journal.propTypes = {
   getProfile: PropTypes.func.isRequired,
   getJournal: PropTypes.func.isRequired,
-  heartbeat: PropTypes.func.isRequired,
   account: PropTypes.object.isRequired,
   game: PropTypes.object.isRequired,
   location: PropTypes.object.isRequired
@@ -68,7 +56,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ ...AccountActions, ...GameActions }, dispatch);
+  return bindActionCreators({ ...AccountActions }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Journal);

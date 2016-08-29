@@ -1,4 +1,5 @@
 import { getApi, pokemonlist } from '../utils/ApiUtil';
+import { parseInventory, saveSettings } from './account';
 import { Utils } from 'pogobuf';
 
 export const SET_LOCATION = 'SET_LOCATION';
@@ -7,9 +8,11 @@ export const FORT_DETAILS = 'FORT_DETAILS';
 export const SPIN_FORT = 'SPIN_FORT';
 
 export function setLocation(location) {
-  const apiClient = getApi();
-  apiClient.setPosition(location.coords.latitude, location.coords.longitude);
-  return { type: SET_LOCATION, location };
+  if (location.coords) {
+    const apiClient = getApi();
+    apiClient.setPosition(location.coords.latitude, location.coords.longitude);
+    return { type: SET_LOCATION, location };
+  }
 }
 
 export function heartbeat() {
@@ -17,8 +20,16 @@ export function heartbeat() {
     try {
       const apiClient = getApi();
       const cellIDs = Utils.getCellIDs(apiClient.playerLatitude, apiClient.playerLongitude);
-      const hb = await apiClient.getMapObjects(cellIDs, Array(cellIDs.length).fill(0));
-      dispatch({ type: HEARTBEAT, status: { success: true }, hb, pokemonlist });
+      const hb = await apiClient.batchStart()
+            .getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+            .getHatchedEggs()
+            .getInventory()
+            .checkAwardedBadges()
+            .downloadSettings()
+            .batchCall();
+      dispatch({ type: HEARTBEAT, status: { success: true }, hb: hb[0], pokemonlist });
+      parseInventory(hb[2], dispatch);
+      dispatch(saveSettings(hb[4]));
     } catch (e) {
       dispatch({ type: HEARTBEAT, status: { success: false, message: e.message } });
     }

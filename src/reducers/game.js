@@ -33,7 +33,6 @@ export function game(state = initialState, action) {
             } else {
               nearbyPokemon.push(pokemon);
             }
-            console.log(pokemon);
           }
           for (const wp of cell.wild_pokemons) {
             if (parseInt(wp.time_till_hidden_ms, 10) < 0) continue;

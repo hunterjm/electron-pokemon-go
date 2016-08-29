@@ -14,10 +14,7 @@ class App extends Component {
     navigator.geolocation.getCurrentPosition((position) => {
       this.props.setLocation({
         type: 'coords',
-        coords: {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        }
+        coords: { ... position.coords },
       });
     }, (result) => {
       console.error(result);
@@ -59,7 +56,7 @@ App.contextTypes = {
 
 function mapStateToProps(state) {
   return {
-    location: state.game.location || {}
+    location: state.game.location || { coords: {} }
   };
 }
 

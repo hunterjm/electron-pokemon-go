@@ -4,7 +4,6 @@ import { GoogleMapLoader, GoogleMap,
 import PokemonInfo from './PokemonInfo';
 import FortInfo from './FortInfo';
 import { getSteps, createButtonControl, calculateDistance } from '../utils/MapUtil';
-import { setTimer } from '../utils/ApiUtil';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import * as AccountActions from '../actions/account';
@@ -73,9 +72,6 @@ class Map extends Component {
           );
           map.controls[window.google.maps.ControlPosition.BOTTOM_CENTER].push(controlDiv);
         }
-        if (this.props.account.loggedIn) {
-          setTimer(this.props.heartbeat, 10000);
-        }
         this.setState({
           directionsInfo: null,
           directions: result,
@@ -93,9 +89,6 @@ class Map extends Component {
     }
     for (const step of this.state.steps) {
       if (step.timeout) clearTimeout(step.timeout);
-    }
-    if (this.props.account.loggedIn) {
-      setTimer(this.props.heartbeat, 30000);
     }
     this.setState({ directions: null, steps: [] });
   }
@@ -125,9 +118,6 @@ class Map extends Component {
                 }
               });
               this.setState({ directionsInfo: null });
-              if (this.props.account.loggedIn) {
-                this.props.heartbeat();
-              }
             }}
           >Teleport</button>
         </div>
@@ -218,7 +208,9 @@ class Map extends Component {
     if (this.props.game.nearbyForts) {
       contents = contents.concat(this.props.game.nearbyForts.map((fort, i) => {
         const size = Math.min(120 / (this._googleMapComponent && this._googleMapComponent.getZoom() / 8), 48);
-        const nearby = calculateDistance(this.props.location.coords, fort) < 40;
+        const maxRange = this.props.account.settings &&
+              this.props.account.settings.fort_settings.interaction_range_meters || 40;
+        const nearby = calculateDistance(this.props.location.coords, fort) < maxRange;
         let icon;
         if (fort.type) {
           if (nearby) {
