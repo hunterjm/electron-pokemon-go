@@ -1,5 +1,4 @@
 import React, { PropTypes, Component } from 'react';
-import { Grid, Row, Col } from 'react-bootstrap';
 // import { default as canUseDOM } from 'can-use-dom';
 import Map from './Map';
 import { bindActionCreators } from 'redux';
@@ -15,10 +14,7 @@ class App extends Component {
     navigator.geolocation.getCurrentPosition((position) => {
       this.props.setLocation({
         type: 'coords',
-        coords: {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        }
+        coords: { ... position.coords },
       });
     }, (result) => {
       console.error(result);
@@ -34,16 +30,16 @@ class App extends Component {
 
   render() {
     return (
-      <Grid id="app-main" fluid style={{ paddingLeft: 0 }}>
-        <Row style={{ height: '100%' }}>
-          <Col md={9} style={{ height: '100%' }}>
+      <div className={'container-fluid'} id="app-main" style={{ paddingLeft: 0 }}>
+        <div className={'row'} style={{ height: '100%' }}>
+          <div className={'col-md-9'} style={{ height: '100%' }}>
             <Map />
-          </Col>
-          <Col md={3} style={{ height: '100%', overflow: 'auto' }}>
+          </div>
+          <div className={'col-md-3'} style={{ height: '100%', overflow: 'auto' }}>
             {this.props.children}
-          </Col>
-        </Row>
-      </Grid>
+          </div>
+        </div>
+      </div>
     );
   }
 }
@@ -60,7 +56,7 @@ App.contextTypes = {
 
 function mapStateToProps(state) {
   return {
-    location: state.game.location || {}
+    location: state.game.location || { coords: {} }
   };
 }
 

@@ -1,4 +1,5 @@
 import { SET_LOCATION, HEARTBEAT, FORT_DETAILS, SPIN_FORT } from '../actions/game';
+import { UPDATE_INVENTORY } from '../actions/account';
 import { findIndex } from 'lodash';
 
 const initialState = {
@@ -7,7 +8,7 @@ const initialState = {
   nearbyPokemon: []
 };
 
-export function game(state = initialState, action) {
+export default function game(state = initialState, action) {
   let nextState;
   switch (action.type) {
     case SET_LOCATION:
@@ -33,7 +34,6 @@ export function game(state = initialState, action) {
             } else {
               nearbyPokemon.push(pokemon);
             }
-            console.log(pokemon);
           }
           for (const wp of cell.wild_pokemons) {
             if (parseInt(wp.time_till_hidden_ms, 10) < 0) continue;
@@ -91,6 +91,10 @@ export function game(state = initialState, action) {
       }
       return nextState;
     }
+    case UPDATE_INVENTORY:
+      return Object.assign({}, state, {
+        inventory: { pokemon: action.pokemon, eggs: action.eggs, incubators: action.incubators }
+      });
     case FORT_DETAILS: {
       if (action.status.success) {
         const nearbyForts = Object.assign([], state.nearbyForts);

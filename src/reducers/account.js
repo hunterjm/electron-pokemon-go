@@ -1,25 +1,30 @@
-import { SAVE_ACCOUNT, LOGIN, GET_PROFILE, GET_JOURNAL } from '../actions/account';
+import { SAVE_ACCOUNT, SAVE_SETTINGS, LOGIN, GET_PROFILE, GET_JOURNAL } from '../actions/account';
 import { saveAccount, loadAccount } from '../utils/ApiUtil';
 import { isEmpty } from 'lodash';
 
-export function account(state = {}, action) {
+export default function account(state = {}, action) {
   let nextState;
   switch (action.type) {
     case LOGIN:
       nextState = Object.assign({}, state, action.status);
       return nextState;
-    case GET_PROFILE:
-      nextState = Object.assign({}, state, { profile: action.profile });
+    case GET_PROFILE: {
+      const profile = Object.assign({}, state.profile, action.profile);
+      nextState = Object.assign({}, state, { profile });
+      return nextState;
+    }
+    case SAVE_SETTINGS:
+      nextState = Object.assign({}, state, { settings: action.settings || {} });
       return nextState;
     case GET_JOURNAL:
-      nextState = Object.assign({}, state, { journal: action.journal });
+      nextState = Object.assign({}, state, { journal: action.journal || {} });
       return nextState;
     case SAVE_ACCOUNT:
-      nextState = {
+      nextState = Object.assign({}, state, {
         username: action.account.username,
         password: action.account.password,
         provider: action.account.provider
-      };
+      });
       saveAccount(nextState);
       return nextState;
     default:

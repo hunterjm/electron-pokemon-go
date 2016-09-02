@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import electron from 'electron';
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
@@ -19,7 +20,25 @@ try {
   // continue regardless of error
 }
 
-app.on('ready', () => {
+const installExtensions = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    const installer = require('electron-devtools-installer'); // eslint-disable-line global-require
+
+    const extensions = [
+      'REACT_DEVELOPER_TOOLS',
+      'REDUX_DEVTOOLS'
+    ];
+    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+    for (const name of extensions) {
+      try {
+        await installer.default(installer[name], forceDownload);
+      } catch (e) {} // eslint-disable-line
+    }
+  }
+};
+
+app.on('ready', async () => {
+  await installExtensions();
   const mainWindow = new BrowserWindow({
     width: size.width || 1080,
     height: size.height || 680,
