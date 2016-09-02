@@ -2,7 +2,7 @@ import { SAVE_ACCOUNT, SAVE_SETTINGS, LOGIN, GET_PROFILE, GET_JOURNAL } from '..
 import { saveAccount, loadAccount } from '../utils/ApiUtil';
 import { isEmpty } from 'lodash';
 
-export function account(state = {}, action) {
+export default function account(state = {}, action) {
   let nextState;
   switch (action.type) {
     case LOGIN:

@@ -3,7 +3,7 @@ const remote = electron.remote;
 const app = remote.app;
 import fs from 'fs';
 import path from 'path';
-console.log(app.getPath('userData'));
+
 export default {
   addWindowSizeSaving() {
     window.addEventListener('resize', () => {

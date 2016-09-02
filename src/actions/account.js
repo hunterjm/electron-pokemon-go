@@ -6,31 +6,56 @@ export const SAVE_SETTINGS = 'SAVE_SETTINGS';
 export const LOGIN = 'LOGIN';
 export const GET_PROFILE = 'GET_PROFILE';
 export const GET_JOURNAL = 'GET_JOURNAL';
+export const UPDATE_INVENTORY = 'UPDATE_INVENTORY';
 
 export function getPlayer(player) {
   const profile = {
     username: player.username,
-    created: new Date(player.creation_time),
+    created: new Date(player.creation_timestamp_ms),
     team: player.team,
     avatar: { ...player.avatar },
     storage: {
-      pokemon: player.poke_storage,
-      items: player.item_storage
+      pokemon: player.max_pokemon_storage,
+      items: player.max_item_storage
     },
-    coins: _.find(player.currency, { type: 'POKECOIN' }).amount || 0,
-    stardust: _.find(player.currency, { type: 'STARDUST' }).amount || 0
+    coins: _.find(player.currencies, { name: 'POKECOIN' }).amount,
+    stardust: _.find(player.currencies, { name: 'STARDUST' }).amount
   };
   return { type: GET_PROFILE, status: { success: true }, profile };
 }
 
 export function parseInventory(inventory, dispatch) {
   if (inventory.success) {
-    for (const item of inventory.inventory_delta.inventory_items) {
-      if (item.inventory_item_data.player_stats) {
-        const profile = { ...item.inventory_item_data.player_stats };
+    const pokemon = [];
+    const eggs = [];
+    const incubators = [];
+    for (const data of inventory.inventory_delta.inventory_items) {
+      if (data.inventory_item_data.player_stats) {
+        const profile = { ...data.inventory_item_data.player_stats };
         dispatch({ type: GET_PROFILE, status: { success: true }, profile });
       }
+      if (data.inventory_item_data.pokemon_data) {
+        const item = data.inventory_item_data.pokemon_data;
+        if (item.is_egg) {
+          eggs.push({ ...item });
+        } else {
+          const p = {
+            ...pokemonlist[item.pokemon_id - 1],
+            ...item,
+            iv: Math.round((item.individual_attack + item.individual_defense + item.individual_stamina) / 45 * 100),
+          };
+          p.nickname = p.nickname || p.name;
+          pokemon.push(p);
+        }
+      }
+      if (data.inventory_item_data.egg_incubators) {
+        for (const incubator of data.inventory_item_data.egg_incubators.egg_incubator) {
+          const item = _.find(itemlist, { id: incubator.item_id });
+          incubators.push({ ...item, ...incubator });
+        }
+      }
     }
+    dispatch({ type: UPDATE_INVENTORY, pokemon, eggs, incubators });
   }
 }
 
@@ -57,7 +82,9 @@ export function login(username, password, location, provider) {
       const result = await apiLogin(username, password, provider, location);
       dispatch(saveAccount(username, password, provider));
       dispatch({ type: LOGIN, status: { loggedIn: true } });
-      dispatch(getPlayer(result[0].player_data));
+      if (result[0].success) {
+        dispatch(getPlayer(result[0].player_data));
+      }
       parseInventory(result[2], dispatch);
       dispatch(saveSettings(result[4]));
     } catch (e) {

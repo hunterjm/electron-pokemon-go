@@ -2,6 +2,7 @@ import React, { PropTypes, Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import * as AccountActions from '../actions/account';
+import IncubatorStats from './IncubatorStats';
 
 class Profile extends Component {
   shouldComponentUpdate(nextProps) {
@@ -10,8 +11,17 @@ class Profile extends Component {
 
   render() {
     const profile = this.props.account.profile;
-    if (profile) {
-      const lvlProgress = profile.experience / profile.next_level_xp * 100;
+    const inventory = this.props.game && this.props.game.inventory;
+    if (profile && inventory) {
+      const lvlProgress = profile.experience / profile.next_level_xp * 100 || 0;
+      const incubators = [];
+      if (inventory.incubators && inventory.incubators.length) {
+        for (const incubator of inventory.incubators) {
+          if (incubator.pokemon_id) {
+            incubators.push(<IncubatorStats key={incubator.id} profile={profile} incubator={incubator} />);
+          }
+        }
+      }
       return (
         <div style={{ textAlign: 'center' }}>
           <img src={`team${parseInt(profile.team, 10) || 0}.png`} width={100} height={100} />
@@ -30,6 +40,12 @@ class Profile extends Component {
             </div>
           </div>
           <div style={{ marginTop: '-10px' }}>{profile.experience} / {profile.next_level_xp} XP</div>
+          <hr />
+          <div>
+            <strong>Kilometers Walked: {profile.km_walked.toFixed(4)} km</strong>
+          </div>
+          <hr />
+          {incubators}
         </div>
       );
     }

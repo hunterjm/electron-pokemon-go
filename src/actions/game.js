@@ -1,5 +1,5 @@
 import { getApi, pokemonlist } from '../utils/ApiUtil';
-import { parseInventory, saveSettings } from './account';
+import * as AccountActions from './account';
 import { Utils } from 'pogobuf';
 
 export const SET_LOCATION = 'SET_LOCATION';
@@ -28,8 +28,8 @@ export function heartbeat() {
             .downloadSettings()
             .batchCall();
       dispatch({ type: HEARTBEAT, status: { success: true }, hb: hb[0], pokemonlist });
-      parseInventory(hb[2], dispatch);
-      dispatch(saveSettings(hb[4]));
+      AccountActions.parseInventory(hb[2], dispatch);
+      dispatch(AccountActions.saveSettings(hb[4]));
     } catch (e) {
       dispatch({ type: HEARTBEAT, status: { success: false, message: e.message } });
     }

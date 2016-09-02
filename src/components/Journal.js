@@ -7,8 +7,7 @@ import * as AccountActions from '../actions/account';
 
 class Journal extends Component {
   componentWillMount() {
-    setTimeout(this.props.getProfile, 500);
-    setTimeout(this.props.getJournal, 1500);
+    this.props.getJournal();
   }
 
   shouldComponentUpdate(nextProps) {
@@ -36,11 +35,8 @@ class Journal extends Component {
 }
 
 Journal.propTypes = {
-  getProfile: PropTypes.func.isRequired,
   getJournal: PropTypes.func.isRequired,
-  account: PropTypes.object.isRequired,
-  game: PropTypes.object.isRequired,
-  location: PropTypes.object.isRequired
+  account: PropTypes.object.isRequired
 };
 
 Journal.contextTypes = {
@@ -48,11 +44,7 @@ Journal.contextTypes = {
 };
 
 function mapStateToProps(state) {
-  return {
-    account: state.account,
-    game: state.game,
-    location: state.game.location || {}
-  };
+  return { account: state.account };
 }
 
 function mapDispatchToProps(dispatch) {

@@ -17,14 +17,17 @@ class Player extends Component {
   render() {
     const account = this.props.account;
     const username = account && account.profile && account.profile.username || 'Profile';
+    const statsClass = this.context.router.isActive('/player/profile') ? 'active' : '';
+    const inventoryClass = this.context.router.isActive('/player/inventory') ? 'active' : '';
+    const journalClass = this.context.router.isActive('/player/journal') ? 'active' : '';
     return (
       <div className="form-section">
         <h1>{username}</h1>
         <hr />
         <ul className={'nav nav-pills'}>
-          <li role="presentation" className={'active'}><Link to={'/profile'}>Stats</Link></li>
-          <li role="presentation"><Link to={'/profile/pokemon'}>Pokemon</Link></li>
-          <li role="presentation"><Link to={'/profile/journal'}>Journal</Link></li>
+          <li role="presentation" className={statsClass}><Link to={'/player'}>Stats</Link></li>
+          <li role="presentation" className={inventoryClass}><Link to={'/player/inventory'}>Pokemon</Link></li>
+          <li role="presentation" className={journalClass}><Link to={'/player/journal'}>Journal</Link></li>
         </ul>
         <hr />
         {this.props.children}
